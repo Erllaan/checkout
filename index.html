@@ -1029,19 +1029,25 @@
                     fb.className = "inline-flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-xs font-bold";
                 }
 
-                // Erros
-                const qErrors = query(collection(db, "errors"), where("matricula", "==", currentUserData.matricula), orderBy("date", "desc"), limit(5));
+                // Erros (Correção: Removemos orderBy da query para evitar erro de índice e ordenamos em JS)
+                const qErrors = query(collection(db, "errors"), where("matricula", "==", currentUserData.matricula));
                 const snapErrors = await getDocs(qErrors);
+                
+                // Processar e Ordenar em JS
+                let errorsList = [];
+                snapErrors.forEach(doc => errorsList.push(doc.data()));
+                errorsList.sort((a, b) => b.date.localeCompare(a.date)); // Ordena Descendente por Data
+                errorsList = errorsList.slice(0, 5); // Pega os 5 últimos
+
                 const errorView = document.getElementById('has-errors-view');
                 const noErrorView = document.getElementById('no-errors-view');
                 const listErrors = document.getElementById('errors-list');
                 
-                if(!snapErrors.empty) {
+                if(errorsList.length > 0) {
                     noErrorView.classList.add('hidden');
                     errorView.classList.remove('hidden');
                     let errHtml = '';
-                    snapErrors.forEach(doc => {
-                        const err = doc.data();
+                    errorsList.forEach(err => {
                         errHtml += `<div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500"><p class="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1"><i class="far fa-calendar"></i> ${err.date.split('-').reverse().join('/')}</p><p class="text-sm text-gray-800 mt-1 font-medium leading-snug">${err.description}</p></div>`;
                     });
                     listErrors.innerHTML = errHtml;
