@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Performance | Sistema de Produtividade</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF Libs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonte -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fa-spinner { animation: spin 1s infinite linear; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* Estilo dos Botões de Aba */
+        .tab-btn {
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            color: #6B7280;
+        }
+        .tab-btn:hover { color: #2563EB; background-color: #EFF6FF; }
+        .tab-btn.active {
+            color: #2563EB;
+            border-bottom-color: #2563EB;
+            background-color: #EFF6FF;
+        }
+
+        /* Checkbox Customizado */
+        .checkbox-wrapper input:checked + div {
+            background-color: #EFF6FF;
+            border-color: #3B82F6;
+        }
+        .checkbox-wrapper input:checked + div .check-icon {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased h-screen flex flex-col">
+
+    <!-- ========================================== -->
+    <!-- TELA DE LOGIN -->
+    <!-- ========================================== -->
+    <section id="login-screen" class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md fade-in relative border border-white/50">
+            
+            <div class="text-center mb-8">
+                <div class="bg-blue-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30 border-4 border-white">
+                    <i class="fas fa-chalkboard-user text-white text-4xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Checkout System</h1>
+                <p class="text-gray-500 text-sm mt-1">Painel de Acompanhamento</p>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Usuário</label>
+                    <div class="relative">
+                        <i class="fas fa-id-card absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="text" id="login-user" class="w-full pl-10 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white" placeholder="Matrícula ou Email" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Senha</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="password" id="login-pass" class="w-full pl-10 pr-10 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white" placeholder="Sua senha" required>
+                        <button type="button" onclick="togglePassVisibility()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 p-1">
+                            <i class="fas fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>Entrar</span> <i class="fas fa-arrow-right text-sm"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center pt-4 border-t border-gray-100">
+                <p class="text-xs text-gray-400 mb-2">Primeiro acesso?</p>
+                <button onclick="toggleAdminSetup()" class="text-xs text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wide">
+                    Criar conta de Gestor
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL CRIAR CONTA GESTOR -->
+    <div id="admin-setup-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-800">Novo Gestor</h3>
+                <button onclick="toggleAdminSetup()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Crie o acesso administrativo principal.</p>
+            <div class="space-y-3">
+                <input type="text" id="setup-nome" placeholder="Nome Completo" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="email" id="setup-email" placeholder="Email" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="setup-pass" placeholder="Senha" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex flex-col gap-2 mt-6">
+                <button onclick="handleCreateAdmin()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">Criar Conta</button>
+                <button onclick="toggleAdminSetup()" class="w-full py-3 text-gray-500 text-sm hover:bg-gray-100 rounded-lg">Voltar ao Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR COLABORADOR (INDIVIDUAL) -->
+    <div id="edit-user-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-800">Editar Colaborador</h3>
+                <button onclick="toggleEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="edit-uid">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome Completo</label>
+                    <input type="text" id="edit-nome" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Matrícula (Exibição)</label>
+                    <input type="text" id="edit-matricula" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Padrão</label>
+                    <input type="text" id="edit-meta" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 10.000">
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 mt-6">
+                <button onclick="saveEditUser()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DEFINIR META EM MASSA -->
+    <div id="batch-meta-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 class="font-bold text-xl text-gray-800">Definir Metas em Lote</h3>
+                <button onclick="toggleBatchMetaModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <p class="text-xs text-gray-500 mb-2">Selecione os colaboradores para atualizar a meta padrão.</p>
+            
+            <!-- Lista de Seleção -->
+            <div class="flex-1 overflow-y-auto min-h-0 border rounded-lg bg-gray-50 mb-4 p-2 scrollbar-thin" id="batch-meta-list">
+                <!-- Checkboxes gerados via JS -->
+                <p class="text-center text-gray-400 text-xs p-4">Carregando...</p>
+            </div>
+
+            <div class="space-y-3 pt-2 border-t">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nova Meta Padrão</label>
+                    <input type="text" id="batch-meta-input" class="w-full border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 15.000">
+                </div>
+                <button onclick="saveBatchMeta()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow">Aplicar a Selecionados</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- DASHBOARD -->
+    <!-- ========================================== -->
+    <section id="dashboard" class="hidden min-h-screen flex flex-col bg-gray-50">
+        
+        <!-- Navbar -->
+        <nav class="bg-white shadow-sm border-b px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-md text-lg" id="user-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-gray-800 text-sm md:text-base" id="user-name">Carregando...</h2>
+                    <span class="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-full" id="user-role">...</span>
+                </div>
+            </div>
+            <button onclick="logout()" class="text-gray-500 hover:text-red-500 px-4 py-2 text-sm font-bold flex items-center gap-2 hover:bg-red-50 rounded-lg transition">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </nav>
+
+        <!-- Conteúdo -->
+        <main class="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full space-y-8 pb-20">
+            
+            <!-- ÁREA DO GESTOR -->
+            <div id="admin-panel" class="hidden fade-in space-y-6">
+                
+                <!-- Abas -->
+                <div class="bg-white p-1 rounded-xl shadow-sm border border-gray-100 inline-flex flex-wrap gap-1">
+                    <button onclick="switchAdminTab('lancamentos')" id="tab-lancamentos" class="tab-btn active px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                        <i class="fas fa-chart-line"></i> Produtividade
+                    </button>
+                    <button onclick="switchAdminTab('relatorios')" id="tab-relatorios" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50">
+                        <i class="fas fa-file-pdf"></i> Relatórios
+                    </button>
+                    <button onclick="switchAdminTab('erros')" id="tab-erros" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <i class="fas fa-exclamation-triangle"></i> Ocorrências
+                    </button>
+                    <button onclick="switchAdminTab('equipe')" id="tab-equipe" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                        <i class="fas fa-users"></i> Equipe
+                    </button>
+                </div>
+
+                <!-- 1. Produtividade & Ranking -->
+                <div id="view-lancamentos" class="fade-in space-y-6">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Formulário -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
+                                    <i class="fas fa-plus-circle text-green-500"></i> Novo Lançamento
+                                </h3>
+                                <form onsubmit="saveProductivity(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
+                                    <div class="md:col-span-2">
+                                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Colaborador</label>
+                                        <select id="input-matricula" onchange="autoFillMeta()" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-green-500 bg-white" required>
+                                            <option value="">Carregando lista...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Data</label>
+                                        <input type="date" id="input-date" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-green-500" required>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-xs font-bold text-gray-500 uppercase ml-1">Produção</label>
+                                            <input type="text" id="input-score" inputmode="decimal" placeholder="Ex: 11.957" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-green-500" required>
+                                        </div>
+                                        <div>
+                                            <label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Dia</label>
+                                            <input type="text" id="input-meta" inputmode="decimal" placeholder="Ex: 10.000" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-gray-300 bg-gray-100">
+                                            <p class="text-[9px] text-gray-400 mt-0.5">Vazio = Usa meta do perfil</p>
+                                        </div>
+                                    </div>
+                                    <div class="md:col-span-2 flex justify-end">
+                                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-[42px] rounded-lg shadow transition">Salvar Lançamento</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Histórico -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-bold text-gray-800 text-lg">Histórico Geral</h3>
+                                    <input type="text" id="filter-matricula" onkeyup="filterHistory()" placeholder="Buscar..." class="border rounded-lg p-2 text-xs w-32 outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div class="overflow-hidden rounded-xl border border-gray-200">
+                                    <table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-3">Data</th><th class="p-3">Colab.</th><th class="p-3">Prod/Meta</th><th class="p-3 text-right"></th></tr></thead><tbody id="admin-history-body" class="bg-white divide-y divide-gray-100"></tbody></table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ranking do Dia -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit">
+                            <div class="flex items-center justify-between mb-4 border-b pb-4">
+                                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                    <i class="fas fa-trophy text-yellow-500"></i> Ranking Hoje
+                                </h3>
+                                <span class="text-xs bg-blue-100 text-blue-800 font-bold px-2 py-1 rounded" id="ranking-date-display">Hoje</span>
+                            </div>
+                            <div id="ranking-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
+                                <p class="text-center text-gray-400 text-sm py-4">Aguardando lançamentos do dia...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Relatórios -->
+                <div id="view-relatorios" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-purple-100 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -mr-6 -mt-6"></div>
+                        <h3 class="font-bold text-gray-800 text-lg mb-6 flex items-center gap-2 relative z-10">
+                            <i class="fas fa-file-pdf text-purple-600"></i> Gerador de Relatórios
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Colaborador (Opcional)</label>
+                                    <select id="report-matricula" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">De</label>
+                                        <input type="date" id="report-start" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Até</label>
+                                        <input type="date" id="report-end" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col justify-end space-y-3">
+                                <div class="flex gap-2">
+                                    <button onclick="setReportDate('today')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Hoje</button>
+                                    <button onclick="setReportDate('week')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Semana</button>
+                                    <button onclick="setReportDate('month')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Mês</button>
+                                </div>
+                                <button onclick="generatePDF()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-purple-200 transition flex items-center justify-center gap-2">
+                                    <i class="fas fa-download"></i> Baixar Relatório PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Ocorrências -->
+                <div id="view-erros" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-red-100 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-bl-full -mr-4 -mt-4"></div>
+                        <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i> Registrar Ocorrência
+                        </h3>
+                        <form onsubmit="saveError(event)" class="grid grid-cols-1 gap-4 bg-red-50/50 p-4 rounded-xl border border-red-100 relative z-10">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Data</label><input type="date" id="error-date" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Colaborador</label>
+                                    <select id="error-matricula" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500 bg-white" required>
+                                        <option value="">Carregando...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase ml-1">Descrição do Erro</label>
+                                <textarea id="error-desc" rows="3" placeholder="Descreva o que aconteceu..." class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500" required></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2"><i class="fas fa-save"></i> Registrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 4. Equipe -->
+                <div id="view-equipe" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fas fa-user-plus text-blue-500"></i> Cadastrar Colaborador</h3>
+                            <button onclick="toggleBatchMetaModal()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-200 transition"><i class="fas fa-layer-group"></i> Alterar Metas em Lote</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-xl">
+                            <div class="md:col-span-2"><label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome</label><input type="text" id="new-colab-nome" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Matrícula</label><input type="text" id="new-colab-mat" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Padrão</label><input type="text" id="new-colab-meta" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 10.000"></div>
+                            <div class="md:col-span-4"><button onclick="createColaborador()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-2.5 font-bold flex items-center justify-center gap-2 shadow transition h-[42px]"><i class="fas fa-plus"></i> Cadastrar</button></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Equipe</h3><button onclick="loadTeamList()" class="text-sm text-blue-500 font-medium"><i class="fas fa-sync"></i> Atualizar</button></div>
+                        <div class="overflow-hidden rounded-xl border border-gray-200"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-4">Nome</th><th class="p-4">Matrícula</th><th class="p-4">Meta</th><th class="p-4 text-right">Ações</th></tr></thead><tbody id="team-list-body" class="bg-white divide-y divide-gray-100"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÁREA DO COLABORADOR -->
+            <div id="colaborador-panel" class="hidden fade-in space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Resultado -->
+                    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden group hover:shadow-md transition">
+                        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                        <h4 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Produção Hoje</h4>
+                        <div class="flex flex-col items-center justify-center mb-4">
+                            <span id="today-score" class="text-6xl font-black text-gray-800">--</span>
+                            <span id="today-meta-display" class="text-sm text-gray-400 font-bold mt-1">Meta: --</span>
+                        </div>
+                        <div id="today-feedback" class="inline-flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-xs font-bold">Aguardando dados...</div>
+                    </div>
+                    
+                    <!-- Painel de Erros -->
+                    <div id="error-card-container" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group hover:shadow-md transition">
+                         <div id="no-errors-view" class="h-full flex flex-col items-center justify-center text-center opacity-50">
+                            <i class="fas fa-check-circle text-6xl text-green-200 mb-4"></i>
+                            <p class="text-sm font-bold text-gray-400">Nenhuma ocorrência.</p>
+                         </div>
+                         <div id="has-errors-view" class="hidden h-full flex flex-col">
+                            <div class="flex items-center gap-2 mb-4 text-red-600">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h4 class="font-bold uppercase tracking-widest text-xs">Atenção</h4>
+                            </div>
+                            <div id="errors-list" class="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin"></div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">Minha Evolução</h3>
+                    <div class="relative h-64 w-full"><canvas id="productivityChart"></canvas></div>
+                </div>
+
+                <!-- Histórico -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-4 border-b bg-gray-50 text-sm font-bold text-gray-700">Histórico Completo</div>
+                    <div id="history-list" class="max-h-60 overflow-y-auto scrollbar-thin"></div>
+                </div>
+            </div>
+            
+        </main>
+    </section>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-32 transition-all duration-300 z-50 flex items-center gap-4 max-w-sm opacity-0 pointer-events-none">
+        <i class="fas fa-info-circle text-blue-400 text-lg"></i>
+        <p id="toast-msg" class="text-sm font-bold">Notificação</p>
+    </div>
+
+    <!-- SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDr544e43_iKWNVL9UCKdKONM_s9_gGxTs",
+            authDomain: "sample-firebase-ai-app-7c4b8.firebaseapp.com",
+            projectId: "sample-firebase-ai-app-7c4b8",
+            storageBucket: "sample-firebase-ai-app-7c4b8.appspot.com",
+            messagingSenderId: "6148922384",
+            appId: "1:6148922384:web:bc6c9ee340d9726acfbe95"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const SYSTEM_DOMAIN = "@checkout.system";
+        
+        let currentUserData = null;
+        let myChart = null;
+        let allProductivityData = [];
+        let allCollaborators = [];
+        let selectedCollaborators = []; // Usado agora apenas para o Modal de Meta em Massa
+        let toastTimeout;
+        window.isRepairing = false;
+
+        function getLocalToday() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function parsePtBrNumber(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            const strVal = String(val).trim();
+            const clean = strVal.replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        function formatNumber(val) {
+            if (val === undefined || val === null || val === '') return '-';
+            return Number(val).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+        }
+
+        function getPerformanceColor(score, meta) {
+            if(!meta || meta === 0) return 'text-gray-600';
+            const ratio = score / meta;
+            if (ratio >= 1.0) return 'text-green-600';
+            if (ratio >= 0.85) return 'text-yellow-600';
+            return 'text-red-600';
+        }
+        
+        function getPerformanceBg(score, meta) {
+            if(!meta || meta === 0) return 'bg-gray-100 text-gray-600';
+            const ratio = score / meta;
+            if (ratio >= 1.0) return 'bg-green-100 text-green-700';
+            if (ratio >= 0.85) return 'bg-yellow-100 text-yellow-700';
+            return 'bg-red-100 text-red-700';
+        }
+
+        // --- BATCH META UTILS (Agora usado no modal de Equipe) ---
+        window.toggleBatchMetaModal = () => {
+            document.getElementById('batch-meta-modal').classList.toggle('hidden');
+            selectedCollaborators = []; // Limpa seleção ao abrir/fechar
+            updateBatchSelectionUI();
+        };
+
+        window.toggleSelection = (matricula) => {
+            if (selectedCollaborators.includes(matricula)) {
+                selectedCollaborators = selectedCollaborators.filter(m => m !== matricula);
+            } else {
+                selectedCollaborators.push(matricula);
+            }
+            updateBatchSelectionUI();
+        };
+
+        function updateBatchSelectionUI() {
+            document.querySelectorAll('.multi-checkbox').forEach(cb => {
+                cb.checked = selectedCollaborators.includes(cb.value);
+            });
+        }
+        
+        window.saveBatchMeta = async () => {
+            const metaRaw = document.getElementById('batch-meta-input').value;
+            const meta = parsePtBrNumber(metaRaw);
+            
+            if(selectedCollaborators.length === 0) return showToast("Selecione alguém.", true);
+            if(!metaRaw) return showToast("Defina uma meta.", true);
+            
+            let count = 0;
+            for (const matricula of selectedCollaborators) {
+                const user = allCollaborators.find(u => u.matricula === matricula);
+                if(user && user.uid) { // Precisamos do UID para update no Firebase Auth Users
+                    // Nota: allCollaborators aqui é um array de dados, preciso encontrar o Doc ID
+                    // Vou ter que varrer os users. Na verdade, ao carregar users, posso guardar o ID.
+                    // Para simplificar, vou fazer query pelo matricula
+                    try {
+                        const q = query(collection(db, "users"), where("matricula", "==", matricula));
+                        const snap = await getDocs(q);
+                        if(!snap.empty) {
+                            const uid = snap.docs[0].id;
+                            await updateDoc(doc(db, "users", uid), { meta: meta });
+                            count++;
+                        }
+                    } catch(e) { console.error(e); }
+                }
+            }
+            
+            showToast(`Meta atualizada para ${count} pessoas!`);
+            toggleBatchMetaModal();
+            loadTeamList();
+        };
+
+        // --- UI UTILS ---
+        window.switchAdminTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            ['lancamentos', 'equipe', 'erros', 'relatorios'].forEach(t => document.getElementById(`view-${t}`).classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            if(tabName === 'equipe') loadTeamList();
+            if(tabName === 'lancamentos' || tabName === 'erros' || tabName === 'relatorios') loadCollaboratorsForSelect();
+        };
+
+        window.togglePassVisibility = () => {
+            const i = document.getElementById('login-pass');
+            const icon = document.getElementById('eye-icon');
+            i.type = i.type === 'password' ? 'text' : 'password';
+            icon.className = i.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+
+        window.toggleEditModal = () => document.getElementById('edit-user-modal').classList.toggle('hidden');
+        window.openEditUser = (uid, nome, matricula, meta) => {
+            document.getElementById('edit-uid').value = uid;
+            document.getElementById('edit-nome').value = nome;
+            document.getElementById('edit-matricula').value = matricula;
+            document.getElementById('edit-meta').value = meta ? meta.toString().replace('.', ',') : '';
+            toggleEditModal();
+        };
+
+        window.saveEditUser = async () => {
+            const uid = document.getElementById('edit-uid').value;
+            const nome = document.getElementById('edit-nome').value;
+            const matricula = document.getElementById('edit-matricula').value;
+            const metaRaw = document.getElementById('edit-meta').value;
+            
+            const meta = parsePtBrNumber(metaRaw);
+            
+            if(!nome || !matricula) return showToast("Preencha nome e matrícula.", true);
+
+            try {
+                await updateDoc(doc(db, "users", uid), { nome, matricula, meta });
+                showToast("Dados atualizados!");
+                toggleEditModal();
+                loadTeamList();
+            } catch(e) { console.error(e); showToast("Erro ao atualizar.", true); }
+        };
+
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            let u = document.getElementById('login-user').value.trim();
+            let p = document.getElementById('login-pass').value.trim();
+            let btn = document.getElementById('btn-login');
+            let emailFinal = u.includes('@') ? u : u + SYSTEM_DOMAIN;
+            let passFinal = p.length < 6 ? p.padEnd(6, '0') : p; 
+            setLoading(btn, true);
+            try {
+                await signInWithEmailAndPassword(auth, emailFinal, passFinal);
+                localStorage.setItem('checkout_last_user', u);
+            } catch (error) {
+                let msg = "Verifique usuário e senha.";
+                if (error.code === 'auth/invalid-credential') msg = "Credenciais inválidas.";
+                showToast(msg, true);
+                setLoading(btn, false);
+            }
+        };
+
+        window.handleCreateAdmin = async () => {
+            const n = document.getElementById('setup-nome').value;
+            const e = document.getElementById('setup-email').value;
+            const p = document.getElementById('setup-pass').value;
+            if(!n || !e || !p) return showToast("Preencha tudo.", true);
+            try {
+                let passFinal = p.length < 6 ? p.padEnd(6, '0') : p;
+                const cred = await createUserWithEmailAndPassword(auth, e, passFinal);
+                await setDoc(doc(db, "users", cred.user.uid), { nome: n, email: e, role: 'admin', createdAt: serverTimestamp() });
+                toggleAdminSetup(); showToast("Admin criado!");
+            } catch(err) { 
+                if (err.code === 'auth/email-already-in-use') {
+                    window.isRepairing = true;
+                    try {
+                        const cred = await signInWithEmailAndPassword(auth, e, p.length < 6 ? p.padEnd(6, '0') : p);
+                        await setDoc(doc(db, "users", cred.user.uid), { nome: n, email: e, role: 'admin', createdAt: serverTimestamp() }, { merge: true });
+                        window.isRepairing = false; toggleAdminSetup(); showToast("Conta recuperada!"); window.location.reload(); 
+                    } catch (lErr) { window.isRepairing = false; showToast("Senha incorreta.", true); }
+                } else showToast(err.message, true);
+            }
+        };
+
+        window.createColaborador = async () => {
+            const n = document.getElementById('new-colab-nome').value;
+            const m = document.getElementById('new-colab-mat').value;
+            const metaRaw = document.getElementById('new-colab-meta').value;
+            const meta = parsePtBrNumber(metaRaw);
+
+            if(!n || !m) return showToast("Preencha nome e matrícula.", true);
+            
+            const tempApp = initializeApp(firebaseConfig, "sec");
+            const tempAuth = getAuth(tempApp);
+            let passFinal = m.length < 6 ? m.padEnd(6, '0') : m;
+
+            try {
+                const cred = await createUserWithEmailAndPassword(tempAuth, m + SYSTEM_DOMAIN, passFinal);
+                await setDoc(doc(db, "users", cred.user.uid), { nome: n, matricula: m, role: 'colaborador', meta: meta, createdAt: serverTimestamp() });
+                await signOut(tempAuth);
+                showToast("Colaborador criado!");
+                document.getElementById('new-colab-nome').value = '';
+                document.getElementById('new-colab-mat').value = '';
+                document.getElementById('new-colab-meta').value = '';
+                if(!document.getElementById('view-equipe').classList.contains('hidden')) loadTeamList();
+            } catch(err) { 
+                if(err.code === 'auth/email-already-in-use') {
+                    try {
+                        const rescueCred = await signInWithEmailAndPassword(tempAuth, m + SYSTEM_DOMAIN, passFinal);
+                        await setDoc(doc(db, "users", rescueCred.user.uid), { nome: n, matricula: m, role: 'colaborador', meta: meta, createdAt: serverTimestamp() }, { merge: true });
+                        await signOut(tempAuth);
+                        showToast("Cadastro recuperado!");
+                        if(!document.getElementById('view-equipe').classList.contains('hidden')) loadTeamList();
+                    } catch (rescueErr) { showToast("Matrícula existe e senha difere.", true); }
+                } else showToast(err.message, true);
+            }
+        };
+
+        window.loadCollaboratorsForSelect = async () => {
+            try {
+                const q = query(collection(db, "users"), where("role", "==", "colaborador"));
+                const snap = await getDocs(q);
+                allCollaborators = [];
+                snap.forEach(doc => allCollaborators.push(doc.data()));
+                allCollaborators.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                // --- SELECT SIMPLES (Produtividade, Ocorrências, Relatórios) ---
+                const simpleOptions = '<option value="">Selecione...</option>' + 
+                    allCollaborators.map(u => `<option value="${u.matricula}">${u.nome} - ${u.matricula}</option>`).join('');
+                
+                const selProd = document.getElementById('input-matricula');
+                const selError = document.getElementById('error-matricula');
+                const selReport = document.getElementById('report-matricula');
+                
+                if(selProd) selProd.innerHTML = simpleOptions;
+                if(selError) selError.innerHTML = simpleOptions;
+                if(selReport) selReport.innerHTML = '<option value="">Todos</option>' + allCollaborators.map(u => `<option value="${u.matricula}">${u.nome}</option>`).join('');
+
+                // --- CHECKBOX LIST (Para Meta em Massa na aba Equipe) ---
+                const batchList = document.getElementById('batch-meta-list');
+                if (batchList) {
+                    let itemsHtml = '';
+                    allCollaborators.forEach(u => {
+                        itemsHtml += `
+                            <label class="flex items-center p-2 hover:bg-white rounded cursor-pointer checkbox-wrapper border-b border-gray-100 last:border-0">
+                                <input type="checkbox" value="${u.matricula}" class="hidden multi-checkbox" onchange="toggleSelection('${u.matricula}')">
+                                <div class="w-4 h-4 border border-gray-300 rounded mr-3 flex items-center justify-center bg-white transition-colors">
+                                    <i class="fas fa-check text-[10px] text-white opacity-0 transition-opacity check-icon"></i>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="font-bold text-gray-700">${u.nome}</span>
+                                    <span class="text-xs text-gray-400 ml-1">Meta atual: ${formatNumber(u.meta)}</span>
+                                </div>
+                            </label>
+                        `;
+                    });
+                    batchList.innerHTML = itemsHtml || '<p class="text-xs text-gray-400 p-2">Sem colaboradores.</p>';
+                }
+
+            } catch(e) { console.error(e); }
+        };
+
+        // AUTO-FILL META (Select Simples)
+        window.autoFillMeta = () => {
+            const mat = document.getElementById('input-matricula').value;
+            const user = allCollaborators.find(u => u.matricula === mat);
+            if(user && user.meta) {
+                document.getElementById('input-meta').value = formatNumber(user.meta);
+            } else {
+                document.getElementById('input-meta').value = '';
+            }
+        };
+
+        window.loadTeamList = async () => {
+            const tbody = document.getElementById('team-list-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+            try {
+                const q = query(collection(db, "users"), where("role", "==", "colaborador"));
+                const snap = await getDocs(q);
+                let html = '';
+                snap.forEach((doc) => {
+                    const u = doc.data();
+                    const metaFormatted = u.meta ? formatNumber(u.meta) : '-';
+                    html += `
+                        <tr class="border-b">
+                            <td class="p-4 font-medium">${u.nome}</td>
+                            <td class="p-4 text-gray-500 font-mono">${u.matricula}</td>
+                            <td class="p-4 text-gray-500">${metaFormatted}</td>
+                            <td class="p-4 text-right flex justify-end gap-2">
+                                <button onclick="openEditUser('${doc.id}', '${u.nome}', '${u.matricula}', ${u.meta || 0})" class="text-blue-500 border border-blue-200 px-3 py-1 rounded text-xs hover:bg-blue-50"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteUser('${doc.id}', '${u.nome}')" class="text-red-500 border border-red-200 px-3 py-1 rounded text-xs hover:bg-red-50"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="4" class="p-4 text-center">Ninguém cadastrado.</td></tr>';
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-red-400">Erro.</td></tr>'; }
+        };
+
+        window.deleteUser = async (uid, nome) => {
+            if(!confirm(`Remover ${nome}?`)) return;
+            try { await deleteDoc(doc(db, "users", uid)); showToast("Removido."); loadTeamList(); } 
+            catch(e) { showToast("Erro.", true); }
+        };
+
+        window.deleteProductivity = async (id) => {
+            if(!confirm("Tem certeza que deseja excluir este lançamento?")) return;
+            try {
+                await deleteDoc(doc(db, "productivity", id));
+                showToast("Lançamento excluído.");
+                loadAdminData(); // Reload list
+            } catch(e) {
+                console.error(e);
+                showToast("Erro ao excluir.", true);
+            }
+        };
+
+        window.saveProductivity = async (e) => {
+            e.preventDefault();
+            const d = document.getElementById('input-date').value;
+            const matricula = document.getElementById('input-matricula').value;
+            const s = parsePtBrNumber(document.getElementById('input-score').value);
+            const inputMetaRaw = document.getElementById('input-meta').value;
+            
+            if(!matricula) return showToast("Selecione um colaborador", true);
+
+            try {
+                // Define qual meta usar
+                let finalMeta = 0;
+                if (inputMetaRaw && inputMetaRaw !== "") {
+                    finalMeta = parsePtBrNumber(inputMetaRaw);
+                } else {
+                    const user = allCollaborators.find(u => u.matricula === matricula);
+                    finalMeta = user ? (user.meta || 0) : 0;
+                }
+
+                // VERIFICA SE JÁ EXISTE NO BANCO PARA ATUALIZAR
+                const q = query(collection(db, "productivity"), where("matricula", "==", matricula), where("date", "==", d));
+                const snap = await getDocs(q);
+
+                if (!snap.empty) {
+                    const docId = snap.docs[0].id;
+                    await updateDoc(doc(db, "productivity", docId), { score: s, meta: finalMeta, timestamp: serverTimestamp() });
+                } else {
+                    await addDoc(collection(db, "productivity"), { date: d, matricula: matricula, score: s, meta: finalMeta, registeredBy: currentUserData.uid, timestamp: serverTimestamp() });
+                }
+
+                showToast(`Lançamento salvo!`);
+                // LIMPA FORM MENOS A DATA
+                document.getElementById('input-score').value = '';
+                document.getElementById('input-meta').value = '';
+                // document.getElementById('input-date').value = getLocalToday(); // REMOVIDO PARA MANTER DATA
+                
+                loadAdminData();
+            } catch(err) { console.error("Erro ao salvar", err); showToast("Erro ao salvar", true); }
+        };
+
+        async function loadAdminData() {
+            try {
+                const q = query(collection(db, "productivity"), orderBy("timestamp", "desc"), limit(100));
+                const snap = await getDocs(q);
+                allProductivityData = []; 
+                snap.forEach(d => allProductivityData.push({ id: d.id, ...d.data() }));
+                renderHistoryTable(allProductivityData.slice(0, 20));
+                updateDailyRanking(); // Atualiza Ranking
+            } catch (err) { console.error(err); }
+        }
+
+        // --- RELATÓRIOS PDF ---
+        window.setReportDate = (type) => {
+            const today = new Date();
+            const startInp = document.getElementById('report-start');
+            const endInp = document.getElementById('report-end');
+            
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            
+            if (type === 'today') {
+                startInp.value = formatDate(today);
+                endInp.value = formatDate(today);
+            } else if (type === 'week') {
+                const first = new Date(today.setDate(today.getDate() - today.getDay())); // Domingo
+                const last = new Date(today.setDate(today.getDate() - today.getDay() + 6)); // Sabado
+                startInp.value = formatDate(first);
+                endInp.value = formatDate(last);
+            } else if (type === 'month') {
+                const first = new Date(today.getFullYear(), today.getMonth(), 1);
+                const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                startInp.value = formatDate(first);
+                endInp.value = formatDate(last);
+            }
+        };
+
+        window.generatePDF = async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const start = document.getElementById('report-start').value;
+            const end = document.getElementById('report-end').value;
+            const mat = document.getElementById('report-matricula').value;
+
+            if (!start || !end) return showToast("Defina as datas.", true);
+
+            // Fetch dados
+            let q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end));
+            if (mat) q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end), where("matricula", "==", mat));
+            
+            try {
+                const snap = await getDocs(q);
+                const data = [];
+                snap.forEach(d => data.push(d.data()));
+                
+                // Ordenar por data
+                data.sort((a, b) => a.date.localeCompare(b.date));
+
+                if (data.length === 0) return showToast("Sem dados no período.", true);
+
+                // Cabeçalho PDF
+                doc.setFontSize(18);
+                doc.text("Relatório de Produtividade", 14, 20);
+                doc.setFontSize(10);
+                doc.text(`Período: ${start.split('-').reverse().join('/')} a ${end.split('-').reverse().join('/')}`, 14, 28);
+                doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 34);
+
+                // Tabela
+                const tableBody = data.map(row => {
+                    const user = allCollaborators.find(u => u.matricula === row.matricula);
+                    const name = user ? user.nome : row.matricula;
+                    const performance = row.meta > 0 ? Math.round((row.score/row.meta)*100) + '%' : '-';
+                    return [
+                        row.date.split('-').reverse().join('/'),
+                        name,
+                        row.matricula,
+                        formatNumber(row.score),
+                        formatNumber(row.meta),
+                        performance
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: 40,
+                    head: [['Data', 'Nome', 'Matrícula', 'Produção', 'Meta', '%']],
+                    body: tableBody,
+                    theme: 'grid',
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [37, 99, 235] }
+                });
+
+                doc.save(`relatorio_checkout_${start}.pdf`);
+                showToast("PDF Gerado!");
+
+            } catch(e) { console.error(e); showToast("Erro ao gerar PDF.", true); }
+        };
+
+        // --- RANKING DO DIA ---
+        function updateDailyRanking() {
+            const today = document.getElementById('input-date').value || getLocalToday();
+            
+            // Filtra por data
+            const dailyData = allProductivityData.filter(d => d.date === today);
+            
+            // Ordena Maior -> Menor Score
+            dailyData.sort((a, b) => b.score - a.score);
+
+            const listEl = document.getElementById('ranking-list');
+            document.getElementById('ranking-date-display').innerText = today.split('-').reverse().join('/');
+            
+            if(dailyData.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
+                return;
+            }
+
+            let html = '';
+            dailyData.forEach((item, index) => {
+                const user = allCollaborators.find(c => c.matricula === item.matricula);
+                const name = user ? user.nome.split(' ')[0] : item.matricula; // Primeiro nome
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index+1}`;
+                const colorClass = getPerformanceColor(item.score, item.meta);
+                
+                html += `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg font-bold w-6 text-center">${medal}</span>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">${name}</p>
+                            <p class="text-[10px] text-gray-500">Meta: ${formatNumber(item.meta)}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-bold text-lg ${colorClass}">${formatNumber(item.score)}</span>
+                    </div>
+                </div>`;
+            });
+            listEl.innerHTML = html;
+        }
+
+        window.filterHistory = () => {
+            const term = document.getElementById('filter-matricula').value.trim();
+            if(!term) { renderHistoryTable(allProductivityData.slice(0, 20)); return; }
+            const filtered = allProductivityData.filter(i => i.matricula.includes(term));
+            renderHistoryTable(filtered);
+        };
+
+        function renderHistoryTable(data) {
+            const tb = document.getElementById('admin-history-body');
+            if(data.length === 0) { tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Nada encontrado.</td></tr>'; return; }
+            let h = ''; 
+            data.forEach(v => {
+                const color = getPerformanceColor(v.score, v.meta);
+                h += `<tr class="border-b">
+                    <td class="p-3 text-gray-500 text-xs">${v.date.split('-').reverse().join('/')}</td>
+                    <td class="p-3 font-bold text-gray-700 text-sm">${v.matricula}</td>
+                    <td class="p-3 ${color} font-bold text-sm">${formatNumber(v.score)} <span class="text-gray-300 text-[10px]">/${formatNumber(v.meta)||'?'}</span></td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteProductivity('${v.id}')" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tb.innerHTML = h;
+        }
+
+        window.saveError = async (e) => {
+            e.preventDefault();
+            const d = document.getElementById('error-date').value;
+            const m = document.getElementById('error-matricula').value;
+            const desc = document.getElementById('error-desc').value;
+            
+            if(!m) return showToast("Selecione um colaborador", true);
+
+            try {
+                await addDoc(collection(db, "errors"), { date: d, matricula: m, description: desc, registeredBy: currentUserData.uid, timestamp: serverTimestamp() });
+                showToast("Registrado!"); e.target.reset(); 
+                document.getElementById('error-date').value = getLocalToday();
+            } catch(err) { showToast("Erro ao salvar.", true); }
+        };
+
+        async function loadColabData() {
+            try {
+                const qProd = query(collection(db, "productivity"), where("matricula", "==", currentUserData.matricula));
+                const snapProd = await getDocs(qProd);
+                const recs = []; snapProd.forEach(d => recs.push(d.data()));
+                recs.sort((a, b) => a.date.localeCompare(b.date));
+
+                const today = getLocalToday();
+                const todayRec = recs.find(r => r.date === today);
+                const lastRec = recs.length > 0 ? recs[recs.length - 1] : null;
+                const displayRec = todayRec || lastRec;
+
+                const sc = document.getElementById('today-score');
+                const metaDisplay = document.getElementById('today-meta-display');
+                const fb = document.getElementById('today-feedback');
+                
+                if(displayRec) {
+                    sc.innerText = formatNumber(displayRec.score);
+                    const metaVal = displayRec.meta || 0;
+                    metaDisplay.innerText = `Meta: ${formatNumber(metaVal)}`;
+                    
+                    // Cálculo de Cor e Feedback
+                    const ratio = metaVal > 0 ? (displayRec.score / metaVal) : 0;
+                    const percentage = Math.round(ratio * 100);
+                    let statusClass = getPerformanceBg(displayRec.score, metaVal);
+                    let icon = '';
+                    let text = '';
+
+                    if(ratio >= 1.0) { icon='🚀'; text='Meta Batida!'; }
+                    else if(ratio >= 0.85) { icon='💪'; text='Quase lá!'; }
+                    else { icon='⚠️'; text='Abaixo da meta'; }
+
+                    fb.className = `inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${statusClass}`;
+                    fb.innerHTML = `${icon} ${text} (${percentage}%)`;
+                    
+                } else { 
+                    sc.innerText = "--"; 
+                    metaDisplay.innerText = "Meta: --";
+                    fb.innerText = "Sem dados recentes"; 
+                    fb.className = "inline-flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-xs font-bold";
+                }
+
+                // Erros
+                const qErrors = query(collection(db, "errors"), where("matricula", "==", currentUserData.matricula), orderBy("date", "desc"), limit(5));
+                const snapErrors = await getDocs(qErrors);
+                const errorView = document.getElementById('has-errors-view');
+                const noErrorView = document.getElementById('no-errors-view');
+                const listErrors = document.getElementById('errors-list');
+                
+                if(!snapErrors.empty) {
+                    noErrorView.classList.add('hidden');
+                    errorView.classList.remove('hidden');
+                    let errHtml = '';
+                    snapErrors.forEach(doc => {
+                        const err = doc.data();
+                        errHtml += `<div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500"><p class="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1"><i class="far fa-calendar"></i> ${err.date.split('-').reverse().join('/')}</p><p class="text-sm text-gray-800 mt-1 font-medium leading-snug">${err.description}</p></div>`;
+                    });
+                    listErrors.innerHTML = errHtml;
+                    document.getElementById('error-card-container').classList.add('border-red-200', 'shadow-md');
+                } else {
+                    noErrorView.classList.remove('hidden'); errorView.classList.add('hidden');
+                    document.getElementById('error-card-container').classList.remove('border-red-200', 'shadow-md');
+                }
+
+                // Gráfico
+                const ctx = document.getElementById('productivityChart').getContext('2d');
+                if(myChart) myChart.destroy();
+                const slice = recs.slice(-7);
+                myChart = new Chart(ctx, { type: 'line', data: { labels: slice.map(r => r.date.split('-').slice(1).reverse().join('/')), datasets: [{ label: 'Produção', data: slice.map(r => r.score), borderColor: '#2563EB', backgroundColor: 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+                
+                let lh = ''; 
+                [...recs].reverse().forEach(r => {
+                    const c = getPerformanceColor(r.score, r.meta);
+                    lh += `<div class="flex justify-between p-3 border-b text-sm"><span class="text-gray-500">${r.date.split('-').reverse().join('/')}</span><span class="font-bold ${c}">${formatNumber(r.score)}</span></div>`;
+                });
+                document.getElementById('history-list').innerHTML = lh || '<p class="p-4 text-center text-gray-400 text-xs">Vazio.</p>';
+
+            } catch(e) { console.error(e); }
+        }
+
+        onAuthStateChanged(auth, async (u) => {
+            if(u) {
+                if(window.isRepairing) return;
+                try {
+                    const docSnap = await getDoc(doc(db, "users", u.uid));
+                    if(docSnap.exists()) {
+                        currentUserData = docSnap.data(); currentUserData.uid = u.uid;
+                        document.getElementById('login-screen').classList.add('hidden');
+                        document.getElementById('dashboard').classList.remove('hidden');
+                        document.getElementById('admin-panel').classList.add('hidden');
+                        document.getElementById('colaborador-panel').classList.add('hidden');
+                        document.getElementById('user-name').innerText = currentUserData.nome;
+                        
+                        if(currentUserData.role === 'admin') {
+                            document.getElementById('admin-panel').classList.remove('hidden');
+                            document.getElementById('user-role').innerText = "Gestor";
+                            loadCollaboratorsForSelect(); 
+                            loadAdminData();
+                        } else {
+                            document.getElementById('colaborador-panel').classList.remove('hidden');
+                            document.getElementById('user-role').innerText = "Colaborador";
+                            loadColabData();
+                        }
+                    } else { signOut(auth); setLoading(document.getElementById('btn-login'), false); }
+                } catch (e) { console.error(e); signOut(auth); setLoading(document.getElementById('btn-login'), false); }
+            } else {
+                document.getElementById('dashboard').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+                setLoading(document.getElementById('btn-login'), false);
+            }
+        });
+
+        window.logout = () => signOut(auth);
+        window.toggleAdminSetup = () => document.getElementById('admin-setup-modal').classList.toggle('hidden');
+        
+        function showToast(m, err=false) {
+            const t = document.getElementById('toast');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            
+            document.getElementById('toast-msg').innerText = m;
+            
+            // Estado VISÍVEL
+            t.className = `fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 z-50 flex items-center gap-4 max-w-sm text-white pointer-events-auto ${err ? 'bg-red-800' : 'bg-gray-900'} translate-y-0 opacity-100`;
+            
+            toastTimeout = setTimeout(() => {
+                // Estado OCULTO (Remove classes de visibilidade conflitantes e adiciona as de ocultação)
+                t.classList.remove('translate-y-0', 'opacity-100');
+                t.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function setLoading(b, l) { if(l) { b.disabled=true; b.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; } else { b.disabled=false; b.innerHTML='<span>Entrar</span> <i class="fas fa-arrow-right text-sm"></i>'; } }
+        
+        document.getElementById('input-date').value = getLocalToday();
+        document.getElementById('error-date').value = getLocalToday();
+        const savedUser = localStorage.getItem('checkout_last_user');
+        if(savedUser) document.getElementById('login-user').value = savedUser;
+    </script>
+</body>
+</html>
