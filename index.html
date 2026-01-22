@@ -87,8 +87,6 @@
                     <span>Entrar</span> <i class="fas fa-arrow-right text-sm"></i>
                 </button>
             </form>
-            
-            <!-- Removido o rodapé de criar conta pública -->
         </div>
     </section>
 
@@ -278,13 +276,14 @@
                             </div>
                         </div>
 
-                        <!-- Ranking do Dia -->
+                        <!-- Ranking do Dia (ATUALIZADO) -->
                         <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit">
                             <div class="flex items-center justify-between mb-4 border-b pb-4">
                                 <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                    <i class="fas fa-trophy text-yellow-500"></i> Ranking Hoje
+                                    <i class="fas fa-trophy text-yellow-500"></i> Ranking
                                 </h3>
-                                <span class="text-xs bg-blue-100 text-blue-800 font-bold px-2 py-1 rounded" id="ranking-date-display">Hoje</span>
+                                <!-- DATA PICKER DO RANKING -->
+                                <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                             </div>
                             <div id="ranking-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
                                 <p class="text-center text-gray-400 text-sm py-4">Aguardando lançamentos do dia...</p>
@@ -859,8 +858,10 @@
                 // LIMPA FORM MENOS A DATA
                 document.getElementById('input-score').value = '';
                 document.getElementById('input-meta').value = '';
-                // document.getElementById('input-date').value = getLocalToday(); // REMOVIDO PARA MANTER DATA
                 
+                // --- Sincroniza a data do ranking com a data lançada ---
+                document.getElementById('ranking-date').value = d;
+
                 loadAdminData();
             } catch(err) { console.error("Erro ao salvar", err); showToast("Erro ao salvar", true); }
         };
@@ -963,7 +964,8 @@
 
         // --- RANKING DO DIA ---
         function updateDailyRanking() {
-            const today = document.getElementById('input-date').value || getLocalToday();
+            // Agora pega a data do input específico do Ranking
+            const today = document.getElementById('ranking-date').value || getLocalToday();
             
             // Filtra por data
             const dailyData = allProductivityData.filter(d => d.date === today);
@@ -972,7 +974,6 @@
             dailyData.sort((a, b) => b.score - a.score);
 
             const listEl = document.getElementById('ranking-list');
-            document.getElementById('ranking-date-display').innerText = today.split('-').reverse().join('/');
             
             if(dailyData.length === 0) {
                 listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
@@ -1268,6 +1269,7 @@
         
         document.getElementById('input-date').value = getLocalToday();
         document.getElementById('error-date').value = getLocalToday();
+        document.getElementById('ranking-date').value = getLocalToday();
         const savedUser = localStorage.getItem('checkout_last_user');
         if(savedUser) document.getElementById('login-user').value = savedUser;
     </script>
