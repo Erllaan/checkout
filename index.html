@@ -408,7 +408,16 @@
                         </div>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Equipe e Gestores</h3><button onclick="loadTeamList()" class="text-sm text-blue-500 font-medium"><i class="fas fa-sync"></i> Atualizar</button></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-800">Equipe e Gestores</h3>
+                            <div class="flex items-center gap-2">
+                                <select id="team-sort" onchange="loadTeamList()" class="text-xs border rounded-lg p-1.5 outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50 text-gray-600">
+                                    <option value="name">Ordem Alfabética</option>
+                                    <option value="date">Data de Cadastro</option>
+                                </select>
+                                <button onclick="loadTeamList()" class="text-sm text-blue-500 font-medium ml-2"><i class="fas fa-sync"></i></button>
+                            </div>
+                        </div>
                         <div class="overflow-hidden rounded-xl border border-gray-200"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-4">Nome</th><th class="p-4">Login</th><th class="p-4">Função</th><th class="p-4">Meta</th><th class="p-4 text-right">Ações</th></tr></thead><tbody id="team-list-body" class="bg-white divide-y divide-gray-100"></tbody></table></div>
                     </div>
                 </div>
@@ -763,6 +772,8 @@
 
         window.loadTeamList = async () => {
             const tbody = document.getElementById('team-list-body');
+            const sortMode = document.getElementById('team-sort') ? document.getElementById('team-sort').value : 'name';
+            
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></td></tr>';
             try {
                 // Carrega TODOS (Sem filtro de role, para ver admins também)
@@ -772,11 +783,21 @@
                 const users = [];
                 snap.forEach(doc => users.push({id: doc.id, ...doc.data()}));
                 
-                // Ordena: Admins primeiro, depois alfabético
+                // Ordena: Admins primeiro, depois alfabético ou por data
                 users.sort((a, b) => {
+                    // Mantém admins no topo
                     if (a.role === 'admin' && b.role !== 'admin') return -1;
                     if (a.role !== 'admin' && b.role === 'admin') return 1;
-                    return a.nome.localeCompare(b.nome);
+
+                    if (sortMode === 'date') {
+                        // Data de Cadastro (Mais recentes primeiro)
+                        const dateA = a.createdAt?.seconds || 0;
+                        const dateB = b.createdAt?.seconds || 0;
+                        return dateB - dateA;
+                    } else {
+                        // Alfabética
+                        return a.nome.localeCompare(b.nome);
+                    }
                 });
 
                 if(users.length === 0) {
