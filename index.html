@@ -87,41 +87,16 @@
                     <span>Entrar</span> <i class="fas fa-arrow-right text-sm"></i>
                 </button>
             </form>
-
-            <div class="mt-6 text-center pt-4 border-t border-gray-100">
-                <p class="text-xs text-gray-400 mb-2">Primeiro acesso?</p>
-                <button onclick="toggleAdminSetup()" class="text-xs text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wide">
-                    Criar conta de Gestor
-                </button>
-            </div>
+            
+            <!-- Removido o rodapé de criar conta pública -->
         </div>
     </section>
-
-    <!-- MODAL CRIAR CONTA GESTOR -->
-    <div id="admin-setup-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-xl text-gray-800">Novo Gestor</h3>
-                <button onclick="toggleAdminSetup()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
-            <p class="text-sm text-gray-500 mb-4">Crie o acesso administrativo principal.</p>
-            <div class="space-y-3">
-                <input type="text" id="setup-nome" placeholder="Nome Completo" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="email" id="setup-email" placeholder="Email" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="password" id="setup-pass" placeholder="Senha" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="flex flex-col gap-2 mt-6">
-                <button onclick="handleCreateAdmin()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">Criar Conta</button>
-                <button onclick="toggleAdminSetup()" class="w-full py-3 text-gray-500 text-sm hover:bg-gray-100 rounded-lg">Voltar ao Login</button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL EDITAR COLABORADOR (INDIVIDUAL) -->
     <div id="edit-user-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-xl text-gray-800">Editar Colaborador</h3>
+                <h3 class="font-bold text-xl text-gray-800">Editar Usuário</h3>
                 <button onclick="toggleEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
             </div>
             <input type="hidden" id="edit-uid">
@@ -131,8 +106,15 @@
                     <input type="text" id="edit-nome" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Matrícula (Exibição)</label>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Login (Matrícula/Email)</label>
                     <input type="text" id="edit-matricula" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Tipo de Conta</label>
+                    <select id="edit-role" class="w-full border p-3 rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="colaborador">Colaborador</option>
+                        <option value="admin">Gestor</option>
+                    </select>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Padrão</label>
@@ -141,6 +123,38 @@
             </div>
             <div class="flex flex-col gap-2 mt-6">
                 <button onclick="saveEditUser()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR OCORRÊNCIA -->
+    <div id="edit-error-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in border border-red-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                     <i class="fas fa-exclamation-triangle text-red-500"></i> Editar Ocorrência
+                </h3>
+                <button onclick="toggleErrorEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="edit-error-id">
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Data</label>
+                        <input type="date" id="edit-error-date" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500 bg-red-50/20">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Matrícula</label>
+                        <input type="text" id="edit-error-matricula" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500 bg-gray-100" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Descrição</label>
+                    <textarea id="edit-error-desc" rows="4" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 mt-6">
+                <button onclick="saveErrorEdit()" class="w-full py-3 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition">Atualizar Ocorrência</button>
             </div>
         </div>
     </div>
@@ -322,48 +336,81 @@
 
                 <!-- 3. Ocorrências -->
                 <div id="view-erros" class="hidden fade-in space-y-6">
-                    <div class="bg-white rounded-2xl shadow-sm border border-red-100 p-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-bl-full -mr-4 -mt-4"></div>
-                        <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
-                            <i class="fas fa-exclamation-triangle text-red-500"></i> Registrar Ocorrência
-                        </h3>
-                        <form onsubmit="saveError(event)" class="grid grid-cols-1 gap-4 bg-red-50/50 p-4 rounded-xl border border-red-100 relative z-10">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Coluna 1: Formulário -->
+                        <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-red-100 p-6 relative overflow-hidden h-fit">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-bl-full -mr-4 -mt-4"></div>
+                            <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i> Registrar Ocorrência
+                            </h3>
+                            <form onsubmit="saveError(event)" class="grid grid-cols-1 gap-4 bg-red-50/50 p-4 rounded-xl border border-red-100 relative z-10">
                                 <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Data</label><input type="date" id="error-date" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500" required></div>
                                 <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Colaborador</label>
                                     <select id="error-matricula" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500 bg-white" required>
                                         <option value="">Carregando...</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Descrição do Erro</label>
+                                    <textarea id="error-desc" rows="3" placeholder="Descreva o que aconteceu..." class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500" required></textarea>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 w-full justify-center"><i class="fas fa-save"></i> Registrar</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Coluna 2: Lista de Ocorrências -->
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                                <h3 class="font-bold text-gray-800 text-lg">Histórico de Divergências</h3>
+                                <button onclick="loadErrorHistory()" class="text-gray-400 hover:text-blue-500 text-sm"><i class="fas fa-sync-alt"></i></button>
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase ml-1">Descrição do Erro</label>
-                                <textarea id="error-desc" rows="3" placeholder="Descreva o que aconteceu..." class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-red-500" required></textarea>
+                            <div class="overflow-hidden rounded-xl border border-gray-200">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold">
+                                        <tr>
+                                            <th class="p-3 w-24">Data</th>
+                                            <th class="p-3 w-32">Colab.</th>
+                                            <th class="p-3">Descrição</th>
+                                            <th class="p-3 w-20 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="error-history-body" class="bg-white divide-y divide-gray-100">
+                                        <tr><td colspan="4" class="p-4 text-center text-gray-400">Carregando...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="flex justify-end">
-                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2"><i class="fas fa-save"></i> Registrar</button>
-                            </div>
-                        </form>
+                        </div>
+
                     </div>
                 </div>
 
-                <!-- 4. Equipe -->
+                <!-- 4. Equipe (ATUALIZADO) -->
                 <div id="view-equipe" class="hidden fade-in space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fas fa-user-plus text-blue-500"></i> Cadastrar Colaborador</h3>
+                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fas fa-user-plus text-blue-500"></i> Cadastrar Usuário</h3>
                             <button onclick="toggleBatchMetaModal()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-200 transition"><i class="fas fa-layer-group"></i> Alterar Metas em Lote</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-xl">
-                            <div class="md:col-span-2"><label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome</label><input type="text" id="new-colab-nome" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
-                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Matrícula</label><input type="text" id="new-colab-mat" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
-                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Padrão</label><input type="text" id="new-colab-meta" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 10.000"></div>
-                            <div class="md:col-span-4"><button onclick="createColaborador()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-2.5 font-bold flex items-center justify-center gap-2 shadow transition h-[42px]"><i class="fas fa-plus"></i> Cadastrar</button></div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-gray-50 p-4 rounded-xl">
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome</label><input type="text" id="new-user-name" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Login (Matrícula/Email)</label><input type="text" id="new-user-login" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Tipo de Conta</label>
+                                <select id="new-user-role" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <option value="colaborador">Colaborador</option>
+                                    <option value="admin">Gestor</option>
+                                </select>
+                            </div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Senha Inicial</label><input type="text" id="new-user-pass" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Opcional (Padrão: Login)"></div>
+                            <div><label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta Padrão</label><input type="text" id="new-user-meta" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 10.000"></div>
+                            <div><button onclick="registerUser()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-2.5 font-bold flex items-center justify-center gap-2 shadow transition h-[42px]"><i class="fas fa-save"></i> Salvar Cadastro</button></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Equipe</h3><button onclick="loadTeamList()" class="text-sm text-blue-500 font-medium"><i class="fas fa-sync"></i> Atualizar</button></div>
-                        <div class="overflow-hidden rounded-xl border border-gray-200"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-4">Nome</th><th class="p-4">Matrícula</th><th class="p-4">Meta</th><th class="p-4 text-right">Ações</th></tr></thead><tbody id="team-list-body" class="bg-white divide-y divide-gray-100"></tbody></table></div>
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">Equipe e Gestores</h3><button onclick="loadTeamList()" class="text-sm text-blue-500 font-medium"><i class="fas fa-sync"></i> Atualizar</button></div>
+                        <div class="overflow-hidden rounded-xl border border-gray-200"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-4">Nome</th><th class="p-4">Login</th><th class="p-4">Função</th><th class="p-4">Meta</th><th class="p-4 text-right">Ações</th></tr></thead><tbody id="team-list-body" class="bg-white divide-y divide-gray-100"></tbody></table></div>
                     </div>
                 </div>
             </div>
@@ -518,10 +565,7 @@
             let count = 0;
             for (const matricula of selectedCollaborators) {
                 const user = allCollaborators.find(u => u.matricula === matricula);
-                if(user && user.uid) { // Precisamos do UID para update no Firebase Auth Users
-                    // Nota: allCollaborators aqui é um array de dados, preciso encontrar o Doc ID
-                    // Vou ter que varrer os users. Na verdade, ao carregar users, posso guardar o ID.
-                    // Para simplificar, vou fazer query pelo matricula
+                if(user && user.uid) { 
                     try {
                         const q = query(collection(db, "users"), where("matricula", "==", matricula));
                         const snap = await getDocs(q);
@@ -546,6 +590,7 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
             document.getElementById(`view-${tabName}`).classList.remove('hidden');
             if(tabName === 'equipe') loadTeamList();
+            if(tabName === 'erros') loadErrorHistory();
             if(tabName === 'lancamentos' || tabName === 'erros' || tabName === 'relatorios') loadCollaboratorsForSelect();
         };
 
@@ -557,12 +602,22 @@
         }
 
         window.toggleEditModal = () => document.getElementById('edit-user-modal').classList.toggle('hidden');
-        window.openEditUser = (uid, nome, matricula, meta) => {
+        window.openEditUser = (uid, nome, matricula, meta, role) => {
             document.getElementById('edit-uid').value = uid;
             document.getElementById('edit-nome').value = nome;
             document.getElementById('edit-matricula').value = matricula;
             document.getElementById('edit-meta').value = meta ? meta.toString().replace('.', ',') : '';
+            document.getElementById('edit-role').value = role || 'colaborador';
             toggleEditModal();
+        };
+
+        window.toggleErrorEditModal = () => document.getElementById('edit-error-modal').classList.toggle('hidden');
+        window.openEditError = (id, date, matricula, desc) => {
+            document.getElementById('edit-error-id').value = id;
+            document.getElementById('edit-error-date').value = date;
+            document.getElementById('edit-error-matricula').value = matricula;
+            document.getElementById('edit-error-desc').value = desc;
+            toggleErrorEditModal();
         };
 
         window.saveEditUser = async () => {
@@ -570,13 +625,14 @@
             const nome = document.getElementById('edit-nome').value;
             const matricula = document.getElementById('edit-matricula').value;
             const metaRaw = document.getElementById('edit-meta').value;
+            const role = document.getElementById('edit-role').value;
             
             const meta = parsePtBrNumber(metaRaw);
             
-            if(!nome || !matricula) return showToast("Preencha nome e matrícula.", true);
+            if(!nome || !matricula) return showToast("Preencha nome e login.", true);
 
             try {
-                await updateDoc(doc(db, "users", uid), { nome, matricula, meta });
+                await updateDoc(doc(db, "users", uid), { nome, matricula, meta, role });
                 showToast("Dados atualizados!");
                 toggleEditModal();
                 loadTeamList();
@@ -602,58 +658,51 @@
             }
         };
 
-        window.handleCreateAdmin = async () => {
-            const n = document.getElementById('setup-nome').value;
-            const e = document.getElementById('setup-email').value;
-            const p = document.getElementById('setup-pass').value;
-            if(!n || !e || !p) return showToast("Preencha tudo.", true);
-            try {
-                let passFinal = p.length < 6 ? p.padEnd(6, '0') : p;
-                const cred = await createUserWithEmailAndPassword(auth, e, passFinal);
-                await setDoc(doc(db, "users", cred.user.uid), { nome: n, email: e, role: 'admin', createdAt: serverTimestamp() });
-                toggleAdminSetup(); showToast("Admin criado!");
-            } catch(err) { 
-                if (err.code === 'auth/email-already-in-use') {
-                    window.isRepairing = true;
-                    try {
-                        const cred = await signInWithEmailAndPassword(auth, e, p.length < 6 ? p.padEnd(6, '0') : p);
-                        await setDoc(doc(db, "users", cred.user.uid), { nome: n, email: e, role: 'admin', createdAt: serverTimestamp() }, { merge: true });
-                        window.isRepairing = false; toggleAdminSetup(); showToast("Conta recuperada!"); window.location.reload(); 
-                    } catch (lErr) { window.isRepairing = false; showToast("Senha incorreta.", true); }
-                } else showToast(err.message, true);
-            }
-        };
-
-        window.createColaborador = async () => {
-            const n = document.getElementById('new-colab-nome').value;
-            const m = document.getElementById('new-colab-mat').value;
-            const metaRaw = document.getElementById('new-colab-meta').value;
+        // --- CADASTRAR NOVO USUÁRIO (COLABORADOR OU GESTOR) ---
+        window.registerUser = async () => {
+            const n = document.getElementById('new-user-name').value;
+            const m = document.getElementById('new-user-login').value;
+            const passInput = document.getElementById('new-user-pass').value;
+            const role = document.getElementById('new-user-role').value;
+            const metaRaw = document.getElementById('new-user-meta').value;
             const meta = parsePtBrNumber(metaRaw);
 
-            if(!n || !m) return showToast("Preencha nome e matrícula.", true);
+            if(!n || !m) return showToast("Preencha nome e login.", true);
             
+            // Define a senha: se não informada, usa o login. Se < 6 chars, faz pad.
+            let p = passInput || m;
+            let passFinal = p.length < 6 ? p.padEnd(6, '0') : p;
+
+            // Usa instância secundária para não deslogar o admin atual
             const tempApp = initializeApp(firebaseConfig, "sec");
             const tempAuth = getAuth(tempApp);
-            let passFinal = m.length < 6 ? m.padEnd(6, '0') : m;
+
+            // Se for email real, usa. Se for matrícula, adiciona domínio falso.
+            let emailFinal = m.includes('@') ? m : m + SYSTEM_DOMAIN;
 
             try {
-                const cred = await createUserWithEmailAndPassword(tempAuth, m + SYSTEM_DOMAIN, passFinal);
-                await setDoc(doc(db, "users", cred.user.uid), { nome: n, matricula: m, role: 'colaborador', meta: meta, createdAt: serverTimestamp() });
+                const cred = await createUserWithEmailAndPassword(tempAuth, emailFinal, passFinal);
+                await setDoc(doc(db, "users", cred.user.uid), { 
+                    nome: n, 
+                    matricula: m, // Salva o que foi digitado como identificador visual
+                    email: emailFinal,
+                    role: role, 
+                    meta: meta, 
+                    createdAt: serverTimestamp() 
+                });
                 await signOut(tempAuth);
-                showToast("Colaborador criado!");
-                document.getElementById('new-colab-nome').value = '';
-                document.getElementById('new-colab-mat').value = '';
-                document.getElementById('new-colab-meta').value = '';
+                showToast(`Usuário (${role}) criado com sucesso!`);
+                
+                // Limpa campos
+                document.getElementById('new-user-name').value = '';
+                document.getElementById('new-user-login').value = '';
+                document.getElementById('new-user-pass').value = '';
+                document.getElementById('new-user-meta').value = '';
+                
                 if(!document.getElementById('view-equipe').classList.contains('hidden')) loadTeamList();
             } catch(err) { 
                 if(err.code === 'auth/email-already-in-use') {
-                    try {
-                        const rescueCred = await signInWithEmailAndPassword(tempAuth, m + SYSTEM_DOMAIN, passFinal);
-                        await setDoc(doc(db, "users", rescueCred.user.uid), { nome: n, matricula: m, role: 'colaborador', meta: meta, createdAt: serverTimestamp() }, { merge: true });
-                        await signOut(tempAuth);
-                        showToast("Cadastro recuperado!");
-                        if(!document.getElementById('view-equipe').classList.contains('hidden')) loadTeamList();
-                    } catch (rescueErr) { showToast("Matrícula existe e senha difere.", true); }
+                    showToast("Este login já está em uso.", true);
                 } else showToast(err.message, true);
             }
         };
@@ -715,27 +764,47 @@
 
         window.loadTeamList = async () => {
             const tbody = document.getElementById('team-list-body');
-            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></td></tr>';
             try {
-                const q = query(collection(db, "users"), where("role", "==", "colaborador"));
+                // Carrega TODOS (Sem filtro de role, para ver admins também)
+                const q = query(collection(db, "users")); 
                 const snap = await getDocs(q);
                 let html = '';
-                snap.forEach((doc) => {
-                    const u = doc.data();
+                const users = [];
+                snap.forEach(doc => users.push({id: doc.id, ...doc.data()}));
+                
+                // Ordena: Admins primeiro, depois alfabético
+                users.sort((a, b) => {
+                    if (a.role === 'admin' && b.role !== 'admin') return -1;
+                    if (a.role !== 'admin' && b.role === 'admin') return 1;
+                    return a.nome.localeCompare(b.nome);
+                });
+
+                if(users.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Ninguém cadastrado.</td></tr>';
+                     return;
+                }
+
+                users.forEach((u) => {
                     const metaFormatted = u.meta ? formatNumber(u.meta) : '-';
+                    const roleBadge = u.role === 'admin' 
+                        ? '<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">Gestor</span>' 
+                        : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold">Colaborador</span>';
+                    
                     html += `
                         <tr class="border-b">
                             <td class="p-4 font-medium">${u.nome}</td>
-                            <td class="p-4 text-gray-500 font-mono">${u.matricula}</td>
+                            <td class="p-4 text-gray-500 font-mono text-xs">${u.matricula || u.email}</td>
+                            <td class="p-4">${roleBadge}</td>
                             <td class="p-4 text-gray-500">${metaFormatted}</td>
                             <td class="p-4 text-right flex justify-end gap-2">
-                                <button onclick="openEditUser('${doc.id}', '${u.nome}', '${u.matricula}', ${u.meta || 0})" class="text-blue-500 border border-blue-200 px-3 py-1 rounded text-xs hover:bg-blue-50"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteUser('${doc.id}', '${u.nome}')" class="text-red-500 border border-red-200 px-3 py-1 rounded text-xs hover:bg-red-50"><i class="fas fa-trash"></i></button>
+                                <button onclick="openEditUser('${u.id}', '${u.nome}', '${u.matricula}', ${u.meta || 0}, '${u.role}')" class="text-blue-500 border border-blue-200 px-3 py-1 rounded text-xs hover:bg-blue-50"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteUser('${u.id}', '${u.nome}')" class="text-red-500 border border-red-200 px-3 py-1 rounded text-xs hover:bg-red-50"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
                 });
-                tbody.innerHTML = html || '<tr><td colspan="4" class="p-4 text-center">Ninguém cadastrado.</td></tr>';
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-red-400">Erro.</td></tr>'; }
+                tbody.innerHTML = html;
+            } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-400">Erro.</td></tr>'; }
         };
 
         window.deleteUser = async (uid, nome) => {
@@ -959,6 +1028,61 @@
             tb.innerHTML = h;
         }
 
+        // --- GESTÃO DE OCORRÊNCIAS (NOVO) ---
+        window.loadErrorHistory = async () => {
+            const tbody = document.getElementById('error-history-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+            try {
+                // Ordena por data decrescente
+                const q = query(collection(db, "errors"), orderBy("timestamp", "desc"), limit(50));
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                     tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Nenhuma ocorrência registrada.</td></tr>';
+                     return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const user = allCollaborators.find(u => u.matricula === data.matricula);
+                    const nome = user ? user.nome.split(' ')[0] : data.matricula; // Primeiro nome
+                    
+                    // Escapar descrição para usar no onclick
+                    const safeDesc = data.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                    html += `
+                    <tr class="border-b hover:bg-red-50/10 transition">
+                        <td class="p-3 text-gray-500 text-xs font-mono">${data.date.split('-').reverse().join('/')}</td>
+                        <td class="p-3">
+                            <div class="font-bold text-gray-700 text-sm">${nome}</div>
+                            <div class="text-[10px] text-gray-400">${data.matricula}</div>
+                        </td>
+                        <td class="p-3 text-sm text-gray-600 max-w-xs truncate" title="${data.description}">${data.description}</td>
+                        <td class="p-3 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="openEditError('${doc.id}', '${data.date}', '${data.matricula}', '${safeDesc}')" class="text-blue-400 hover:text-blue-600 p-1"><i class="fas fa-pen"></i></button>
+                                <button onclick="deleteError('${doc.id}')" class="text-gray-400 hover:text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Erro ao carregar dados.</td></tr>';
+            }
+        };
+
+        window.deleteError = async (id) => {
+            if(!confirm("Excluir esta ocorrência?")) return;
+            try {
+                await deleteDoc(doc(db, "errors", id));
+                showToast("Ocorrência removida.");
+                loadErrorHistory();
+            } catch(e) { showToast("Erro ao excluir.", true); }
+        };
+
         window.saveError = async (e) => {
             e.preventDefault();
             const d = document.getElementById('error-date').value;
@@ -969,9 +1093,26 @@
 
             try {
                 await addDoc(collection(db, "errors"), { date: d, matricula: m, description: desc, registeredBy: currentUserData.uid, timestamp: serverTimestamp() });
-                showToast("Registrado!"); e.target.reset(); 
+                showToast("Registrado!"); 
+                document.getElementById('error-desc').value = '';
                 document.getElementById('error-date').value = getLocalToday();
+                loadErrorHistory(); // Atualiza a lista na hora
             } catch(err) { showToast("Erro ao salvar.", true); }
+        };
+
+        window.saveErrorEdit = async () => {
+            const id = document.getElementById('edit-error-id').value;
+            const d = document.getElementById('edit-error-date').value;
+            const desc = document.getElementById('edit-error-desc').value;
+
+            if(!desc) return showToast("Descrição vazia.", true);
+
+            try {
+                await updateDoc(doc(db, "errors", id), { date: d, description: desc });
+                showToast("Ocorrência atualizada!");
+                toggleErrorEditModal();
+                loadErrorHistory();
+            } catch(e) { console.error(e); showToast("Erro ao editar.", true); }
         };
 
         async function loadColabData() {
@@ -1106,7 +1247,6 @@
         });
 
         window.logout = () => signOut(auth);
-        window.toggleAdminSetup = () => document.getElementById('admin-setup-modal').classList.toggle('hidden');
         
         function showToast(m, err=false) {
             const t = document.getElementById('toast');
