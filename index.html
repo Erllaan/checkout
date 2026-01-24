@@ -183,6 +183,85 @@
         </div>
     </div>
 
+    <!-- MODAL VISUALIZAR RELATÓRIO -->
+    <div id="preview-report-modal" class="fixed inset-0 bg-white hidden flex flex-col z-50 animate-fade-in overflow-hidden">
+        <!-- Header -->
+        <div class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm z-10">
+            <div>
+                <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-purple-600"></i> Relatório Analítico
+                </h3>
+                <p class="text-xs text-gray-500" id="preview-period-text">Período: --/--/---- a --/--/----</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closePreviewReport()" class="px-4 py-2 text-gray-500 hover:text-gray-700 font-bold text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">Fechar</button>
+                <button onclick="generatePDF(true)" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-lg shadow-lg shadow-purple-200 transition flex items-center gap-2">
+                    <i class="fas fa-download"></i> Baixar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Conteúdo Scrollável -->
+        <div class="flex-1 overflow-y-auto bg-gray-50 p-6 scrollbar-thin">
+            <div class="max-w-5xl mx-auto space-y-6">
+                
+                <!-- Cards de Resumo -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Produção Total</p>
+                        <p class="text-2xl font-black text-gray-800" id="preview-total-prod">--</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Média Diária</p>
+                        <p class="text-2xl font-black text-gray-800" id="preview-avg-prod">--</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Melhor Dia</p>
+                        <p class="text-2xl font-black text-gray-800" id="preview-best-day">--</p>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="font-bold text-gray-700 mb-4">Top Produtividade</h4>
+                        <div class="h-64 relative">
+                            <canvas id="previewChartRanking"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h4 class="font-bold text-gray-700 mb-4">Evolução do Período</h4>
+                        <div class="h-64 relative">
+                            <canvas id="previewChartTimeline"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela Detalhada -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50 font-bold text-gray-700 text-sm">Detalhamento</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-white text-gray-500 uppercase text-xs font-bold border-b">
+                                <tr>
+                                    <th class="p-4">Data</th>
+                                    <th class="p-4">Colaborador</th>
+                                    <th class="p-4">Produção</th>
+                                    <th class="p-4">Meta</th>
+                                    <th class="p-4">%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-table-body" class="divide-y divide-gray-100">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ========================================== -->
     <!-- DASHBOARD -->
     <!-- ========================================== -->
@@ -292,7 +371,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Relatórios -->
+                <!-- 2. Relatórios (ATUALIZADO) -->
                 <div id="view-relatorios" class="hidden fade-in space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-purple-100 p-6 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -mr-6 -mt-6"></div>
@@ -325,9 +404,15 @@
                                     <button onclick="setReportDate('week')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Semana</button>
                                     <button onclick="setReportDate('month')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Mês</button>
                                 </div>
-                                <button onclick="generatePDF()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-purple-200 transition flex items-center justify-center gap-2">
-                                    <i class="fas fa-download"></i> Baixar Relatório PDF
-                                </button>
+                                <!-- BOTOES DE ACAO -->
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="viewReport()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                        <i class="fas fa-eye"></i> Visualizar
+                                    </button>
+                                    <button onclick="generatePDF(false)" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-purple-200 transition flex items-center justify-center gap-2">
+                                        <i class="fas fa-download"></i> Baixar PDF
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -505,9 +590,11 @@
         
         let currentUserData = null;
         let myChart = null;
+        let previewChart1 = null;
+        let previewChart2 = null;
         let allProductivityData = [];
         let allCollaborators = [];
-        let selectedCollaborators = []; // Usado agora apenas para o Modal de Meta em Massa
+        let selectedCollaborators = [];
         let toastTimeout;
         window.isRepairing = false;
 
@@ -906,7 +993,7 @@
             } catch (err) { console.error(err); }
         }
 
-        // --- RELATÓRIOS PDF ---
+        // --- RELATÓRIOS PDF E VISUALIZAÇÃO ---
         window.setReportDate = (type) => {
             const today = new Date();
             const startInp = document.getElementById('report-start');
@@ -927,6 +1014,277 @@
                 const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                 startInp.value = formatDate(first);
                 endInp.value = formatDate(last);
+            }
+        };
+
+        window.closePreviewReport = () => {
+            document.getElementById('preview-report-modal').classList.add('hidden');
+        };
+
+        async function fetchReportData() {
+             const start = document.getElementById('report-start').value;
+             const end = document.getElementById('report-end').value;
+             const mat = document.getElementById('report-matricula').value;
+
+             if (!start || !end) { showToast("Defina as datas.", true); return null; }
+
+             // Fetch dados
+             let q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end));
+             if (mat) q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end), where("matricula", "==", mat));
+
+             const snap = await getDocs(q);
+             const data = [];
+             snap.forEach(d => data.push(d.data()));
+             
+             // Ordenar por data
+             data.sort((a, b) => a.date.localeCompare(b.date));
+             return { data, start, end };
+        }
+
+        window.viewReport = async () => {
+            const result = await fetchReportData();
+            if(!result) return;
+            const { data, start, end } = result;
+
+            if (data.length === 0) return showToast("Sem dados no período.", true);
+
+            // Abre Modal
+            document.getElementById('preview-report-modal').classList.remove('hidden');
+            document.getElementById('preview-period-text').innerText = `Período: ${start.split('-').reverse().join('/')} a ${end.split('-').reverse().join('/')}`;
+
+            // Processamento
+            let totalProd = 0;
+            let maxProd = 0;
+            let maxDay = '-';
+            const personMap = {};
+            const dayMap = {};
+
+            data.forEach(d => {
+                totalProd += d.score;
+                if(d.score > maxProd) { maxProd = d.score; maxDay = d.date.split('-').reverse().slice(0,2).join('/'); }
+                
+                // Maps
+                if(!personMap[d.matricula]) personMap[d.matricula] = 0;
+                personMap[d.matricula] += d.score;
+
+                if(!dayMap[d.date]) dayMap[d.date] = 0;
+                dayMap[d.date] += d.score;
+            });
+
+            // Resumos
+            document.getElementById('preview-total-prod').innerText = formatNumber(totalProd);
+            const daysCount = Object.keys(dayMap).length || 1;
+            document.getElementById('preview-avg-prod').innerText = formatNumber(totalProd / daysCount);
+            document.getElementById('preview-best-day').innerText = maxDay + ` (${formatNumber(maxProd)})`;
+
+            // Charts
+            const sortedPeople = Object.keys(personMap).map(m => {
+                const u = allCollaborators.find(c => c.matricula === m);
+                return { name: u ? u.nome.split(' ')[0] : m, score: personMap[m] };
+            }).sort((a,b) => b.score - a.score).slice(0, 10);
+            
+            const sortedDays = Object.keys(dayMap).sort();
+
+            // Renderiza Gráfico 1 (Ranking)
+            if(previewChart1) previewChart1.destroy();
+            const ctx1 = document.getElementById('previewChartRanking').getContext('2d');
+            previewChart1 = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: sortedPeople.map(p => p.name),
+                    datasets: [{ label: 'Produção', data: sortedPeople.map(p => p.score), backgroundColor: '#3B82F6', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Renderiza Gráfico 2 (Timeline)
+            if(previewChart2) previewChart2.destroy();
+            const ctx2 = document.getElementById('previewChartTimeline').getContext('2d');
+            previewChart2 = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: sortedDays.map(d => d.split('-').reverse().slice(0,2).join('/')),
+                    datasets: [{ label: 'Total Dia', data: sortedDays.map(d => dayMap[d]), borderColor: '#9333EA', backgroundColor: 'rgba(147, 51, 234, 0.1)', fill: true, tension: 0.3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Tabela
+            const tbody = document.getElementById('preview-table-body');
+            tbody.innerHTML = '';
+            data.forEach(row => {
+                 const user = allCollaborators.find(u => u.matricula === row.matricula);
+                 const name = user ? user.nome : row.matricula;
+                 const performance = row.meta > 0 ? Math.round((row.score/row.meta)*100) + '%' : '-';
+                 const tr = `<tr class="hover:bg-gray-50 transition">
+                    <td class="p-4 text-gray-500 font-mono">${row.date.split('-').reverse().join('/')}</td>
+                    <td class="p-4 font-bold text-gray-700">${name}</td>
+                    <td class="p-4 font-bold text-blue-600">${formatNumber(row.score)}</td>
+                    <td class="p-4 text-gray-400">${formatNumber(row.meta)}</td>
+                    <td class="p-4 text-sm">${performance}</td>
+                 </tr>`;
+                 tbody.innerHTML += tr;
+            });
+        };
+
+        window.generatePDF = async (fromPreview = false) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Reutiliza dados se estiver no modal, ou busca novo
+            let result;
+            if (fromPreview) {
+                // Se já estiver visualizando, os inputs ainda estão lá, podemos refazer o fetch ou pegar do escopo
+                // Para simplificar e garantir, fazemos fetch novamente (é rápido no cache do Firestore)
+                result = await fetchReportData(); 
+            } else {
+                result = await fetchReportData();
+            }
+
+            if(!result) return;
+            const { data, start, end } = result;
+
+            if (data.length === 0) return showToast("Sem dados.", true);
+
+            try {
+                // UI Feedback
+                let btn; 
+                if(!fromPreview) btn = document.querySelector('button[onclick="generatePDF(false)"]');
+                else btn = document.querySelector('button[onclick="generatePDF(true)"]');
+                
+                const oldText = btn ? btn.innerHTML : '';
+                if(btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...'; btn.disabled = true; }
+
+                // --- PROCESSAMENTO PARA GRÁFICOS ---
+                const personMap = {};
+                const dayMap = {};
+                data.forEach(d => {
+                    if(!personMap[d.matricula]) personMap[d.matricula] = 0; personMap[d.matricula] += d.score;
+                    if(!dayMap[d.date]) dayMap[d.date] = 0; dayMap[d.date] += d.score;
+                });
+
+                const sortedPeople = Object.keys(personMap).map(m => {
+                    const u = allCollaborators.find(c => c.matricula === m);
+                    return { name: u ? u.nome.split(' ')[0] : m, score: personMap[m] };
+                }).sort((a,b) => b.score - a.score).slice(0, 10);
+                const sortedDays = Object.keys(dayMap).sort();
+
+                // --- GERAÇÃO DAS IMAGENS DOS GRÁFICOS (FIXED) ---
+                const chartCanvas = document.createElement('canvas');
+                chartCanvas.width = 1000; // Alta Resolução
+                chartCanvas.height = 500;
+                // CORREÇÃO: Não usar display: none, mas sim jogar para fora da tela
+                chartCanvas.style.position = 'absolute';
+                chartCanvas.style.left = '-9999px';
+                chartCanvas.style.top = '-9999px';
+                document.body.appendChild(chartCanvas);
+
+                const generateChartImg = async (type, labels, datasetData, label, color) => {
+                    return new Promise(resolve => {
+                        const chart = new Chart(chartCanvas, {
+                            type: type,
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: label,
+                                    data: datasetData,
+                                    backgroundColor: color,
+                                    borderColor: color.replace('0.5', '1'),
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                animation: false,
+                                responsive: false,
+                                plugins: { 
+                                    legend: { display: false }, 
+                                    title: { display: true, text: label, font: { size: 24 } } 
+                                },
+                                layout: { padding: 20 },
+                                scales: {
+                                    y: { ticks: { font: { size: 14 } } },
+                                    x: { ticks: { font: { size: 14 } } }
+                                }
+                            }
+                        });
+                        // Pequeno delay para garantir renderização no canvas offscreen
+                        setTimeout(() => {
+                            const img = chartCanvas.toDataURL('image/png');
+                            chart.destroy();
+                            resolve(img);
+                        }, 200);
+                    });
+                };
+
+                // Gráfico 1: Ranking (Barra)
+                const chart1Labels = sortedPeople.map(p => p.name);
+                const chart1Data = sortedPeople.map(p => p.score);
+                const imgRanking = await generateChartImg('bar', chart1Labels, chart1Data, 'Top Produtividade', 'rgba(59, 130, 246, 0.7)');
+                
+                // Gráfico 2: Evolução (Linha)
+                const chart2Labels = sortedDays.map(d => d.split('-').reverse().slice(0,2).join('/'));
+                const chart2Data = sortedDays.map(d => dayMap[d]);
+                const imgTimeline = await generateChartImg('line', chart2Labels, chart2Data, 'Evolução Diária', 'rgba(147, 85, 247, 0.7)');
+                
+                document.body.removeChild(chartCanvas);
+
+                // --- MONTAGEM DO PDF ---
+                doc.setFontSize(22);
+                doc.setTextColor(40, 40, 40);
+                doc.text("Relatório de Performance", 14, 20);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Período: ${start.split('-').reverse().join('/')} a ${end.split('-').reverse().join('/')}`, 14, 28);
+                doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 34);
+
+                let currentY = 45;
+                
+                // Gráfico 1
+                doc.addImage(imgRanking, 'PNG', 14, currentY, 180, 90);
+                currentY += 100;
+
+                // Gráfico 2
+                doc.addImage(imgTimeline, 'PNG', 14, currentY, 180, 90);
+                
+                // Nova Página para Tabela
+                doc.addPage();
+                doc.setFontSize(14);
+                doc.setTextColor(0,0,0);
+                doc.text("Detalhamento dos Lançamentos", 14, 20);
+
+                const tableBody = data.map(row => {
+                    const user = allCollaborators.find(u => u.matricula === row.matricula);
+                    const name = user ? user.nome : row.matricula;
+                    const performance = row.meta > 0 ? Math.round((row.score/row.meta)*100) + '%' : '-';
+                    return [
+                        row.date.split('-').reverse().join('/'),
+                        name,
+                        row.matricula,
+                        formatNumber(row.score),
+                        formatNumber(row.meta),
+                        performance
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: 25,
+                    head: [['Data', 'Nome', 'Matrícula', 'Produção', 'Meta', '%']],
+                    body: tableBody,
+                    theme: 'grid',
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [37, 99, 235] }
+                });
+
+                doc.save(`relatorio_checkout_${start}.pdf`);
+                showToast("PDF Gerado com sucesso!");
+
+                if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
+
+            } catch(e) { 
+                console.error(e); 
+                showToast("Erro ao gerar PDF.", true);
+                if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
             }
         };
 
