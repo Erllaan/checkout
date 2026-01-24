@@ -945,6 +945,11 @@
             if (mat) q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end), where("matricula", "==", mat));
             
             try {
+                const btn = document.querySelector('button[onclick="generatePDF()"]');
+                const oldText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+                btn.disabled = true;
+
                 const snap = await getDocs(q);
                 const data = [];
                 snap.forEach(d => data.push(d.data()));
@@ -952,16 +957,121 @@
                 // Ordenar por data
                 data.sort((a, b) => a.date.localeCompare(b.date));
 
-                if (data.length === 0) return showToast("Sem dados no período.", true);
+                if (data.length === 0) {
+                    btn.innerHTML = oldText;
+                    btn.disabled = false;
+                    return showToast("Sem dados no período.", true);
+                }
 
+                // --- PROCESSAMENTO PARA GRÁFICOS ---
+                // 1. Totais por Pessoa
+                const personMap = {};
+                // 2. Totais por Dia
+                const dayMap = {};
+
+                data.forEach(d => {
+                    // Por Pessoa
+                    if(!personMap[d.matricula]) personMap[d.matricula] = 0;
+                    personMap[d.matricula] += d.score;
+
+                    // Por Dia
+                    if(!dayMap[d.date]) dayMap[d.date] = 0;
+                    dayMap[d.date] += d.score;
+                });
+
+                // Preparar Arrays para Chart.js
+                // Top 10 Pessoas
+                const sortedPeople = Object.keys(personMap).map(m => {
+                    const u = allCollaborators.find(c => c.matricula === m);
+                    return { name: u ? u.nome.split(' ')[0] : m, score: personMap[m] };
+                }).sort((a,b) => b.score - a.score).slice(0, 10);
+
+                const chart1Labels = sortedPeople.map(p => p.name);
+                const chart1Data = sortedPeople.map(p => p.score);
+
+                // Evolução Dias
+                const sortedDays = Object.keys(dayMap).sort();
+                const chart2Labels = sortedDays.map(d => d.split('-').reverse().slice(0,2).join('/')); // DD/MM
+                const chart2Data = sortedDays.map(d => dayMap[d]);
+
+                // --- GERAÇÃO DAS IMAGENS DOS GRÁFICOS ---
+                const chartCanvas = document.createElement('canvas');
+                chartCanvas.width = 800;
+                chartCanvas.height = 400;
+                chartCanvas.style.display = 'none'; // Importante não exibir, mas precisa estar no DOM ou memória? ChartJS 3/4 funciona em memória se passado o context. 
+                // ChartJS muitas vezes precisa estar no DOM para calcular tamanhos relativos, mas se fixarmos width/height no canvas element funciona.
+                document.body.appendChild(chartCanvas);
+
+                const generateChartImg = async (type, labels, datasetData, label, color) => {
+                    return new Promise(resolve => {
+                        const chart = new Chart(chartCanvas, {
+                            type: type,
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: label,
+                                    data: datasetData,
+                                    backgroundColor: color,
+                                    borderColor: color.replace('0.5', '1'),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                animation: false,
+                                responsive: false,
+                                plugins: { legend: { display: false }, title: { display: true, text: label } }
+                            }
+                        });
+                        setTimeout(() => {
+                            const img = chartCanvas.toDataURL('image/png');
+                            chart.destroy();
+                            resolve(img);
+                        }, 100); // Pequeno delay para garantir render
+                    });
+                };
+
+                // Gráfico 1: Ranking (Barra)
+                const imgRanking = await generateChartImg('bar', chart1Labels, chart1Data, 'Top Produtividade (Total)', 'rgba(59, 130, 246, 0.7)');
+                
+                // Gráfico 2: Evolução (Linha)
+                const imgTimeline = await generateChartImg('line', chart2Labels, chart2Data, 'Evolução Diária (Geral)', 'rgba(168, 85, 247, 0.7)');
+                
+                document.body.removeChild(chartCanvas);
+
+
+                // --- MONTAGEM DO PDF ---
+                
                 // Cabeçalho PDF
                 doc.setFontSize(18);
-                doc.text("Relatório de Produtividade", 14, 20);
+                doc.setTextColor(40, 40, 40);
+                doc.text("Relatório de Performance", 14, 20);
+                
                 doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
                 doc.text(`Período: ${start.split('-').reverse().join('/')} a ${end.split('-').reverse().join('/')}`, 14, 28);
                 doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 34);
 
-                // Tabela
+                // Adicionar Gráficos
+                // (x, y, w, h)
+                let currentY = 40;
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text("Ranking do Período", 14, currentY);
+                doc.addImage(imgRanking, 'PNG', 14, currentY + 2, 180, 80);
+                
+                currentY += 90; // Espaço do gráfico 1
+
+                // Verifica quebra de página se necessário, mas aqui cabem 2 gráficos numa pagina A4
+                doc.text("Evolução Diária", 14, currentY);
+                doc.addImage(imgTimeline, 'PNG', 14, currentY + 2, 180, 80);
+
+                currentY += 90; // Espaço do gráfico 2
+
+                // Adicionar Tabela (Nova Página se precisar)
+                doc.addPage();
+                doc.text("Detalhamento dos Lançamentos", 14, 20);
+
                 const tableBody = data.map(row => {
                     const user = allCollaborators.find(u => u.matricula === row.matricula);
                     const name = user ? user.nome : row.matricula;
@@ -977,7 +1087,7 @@
                 });
 
                 doc.autoTable({
-                    startY: 40,
+                    startY: 25,
                     head: [['Data', 'Nome', 'Matrícula', 'Produção', 'Meta', '%']],
                     body: tableBody,
                     theme: 'grid',
@@ -985,10 +1095,19 @@
                     headStyles: { fillColor: [37, 99, 235] }
                 });
 
-                doc.save(`relatorio_checkout_${start}.pdf`);
-                showToast("PDF Gerado!");
+                doc.save(`relatorio_completo_${start}.pdf`);
+                showToast("PDF com Gráficos Gerado!");
 
-            } catch(e) { console.error(e); showToast("Erro ao gerar PDF.", true); }
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+
+            } catch(e) { 
+                console.error(e); 
+                showToast("Erro ao gerar PDF.", true);
+                const btn = document.querySelector('button[onclick="generatePDF()"]');
+                if(btn) btn.innerHTML = '<i class="fas fa-download"></i> Baixar Relatório PDF';
+                if(btn) btn.disabled = false;
+            }
         };
 
         // --- RANKING DO DIA (CORRIGIDO PARA BUSCAR NO BANCO) ---
