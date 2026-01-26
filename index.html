@@ -395,14 +395,20 @@
                             </div>
                         </div>
 
-                        <!-- Ranking do Dia (ATUALIZADO) -->
+                        <!-- Ranking do Dia (ATUALIZADO COM TOGGLE) -->
                         <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit">
-                            <div class="flex items-center justify-between mb-4 border-b pb-4">
-                                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                    <i class="fas fa-trophy text-yellow-500"></i> Ranking
-                                </h3>
-                                <!-- DATA PICKER DO RANKING -->
-                                <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                            <div class="flex flex-col gap-2 mb-4 border-b pb-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <i class="fas fa-trophy text-yellow-500"></i> Ranking
+                                    </h3>
+                                    <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 w-32">
+                                </div>
+                                <!-- Toggle de Modo -->
+                                <div class="flex bg-gray-100 p-1 rounded-lg">
+                                    <button onclick="setRankingMode('absolute')" id="btn-rank-abs" class="flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition">Volume</button>
+                                    <button onclick="setRankingMode('percent')" id="btn-rank-pct" class="flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition">Performance (%)</button>
+                                </div>
                             </div>
                             <div id="ranking-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
                                 <p class="text-center text-gray-400 text-sm py-4">Aguardando lançamentos do dia...</p>
@@ -641,6 +647,8 @@
         // --- CACHE DE DADOS DO RELATÓRIO ---
         let reportDataCache = []; // Guarda os dados brutos carregados
         let reportUsersCache = []; // Guarda a lista de usuários únicos do relatório
+        
+        let rankingMode = 'absolute'; // 'absolute' ou 'percent'
 
         function getLocalToday() {
             const d = new Date();
@@ -1482,7 +1490,24 @@
             }
         };
 
-        // --- RANKING DO DIA (CORRIGIDO PARA BUSCAR NO BANCO) ---
+        // --- MUDAR MODO DE RANKING ---
+        window.setRankingMode = (mode) => {
+            rankingMode = mode;
+            // Atualiza UI dos botões
+            const btnAbs = document.getElementById('btn-rank-abs');
+            const btnPct = document.getElementById('btn-rank-pct');
+            
+            if (mode === 'absolute') {
+                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
+                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
+            } else {
+                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
+                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
+            }
+            updateDailyRanking(); // Recarrega com o novo modo
+        };
+
+        // --- RANKING DO DIA (CORRIGIDO PARA BUSCAR NO BANCO E SUPORTAR PERCENTUAL) ---
         window.updateDailyRanking = async () => {
             const dateInput = document.getElementById('ranking-date');
             const selectedDate = dateInput.value || getLocalToday();
@@ -1497,13 +1522,22 @@
                 
                 const dailyData = [];
                 snap.forEach(doc => dailyData.push(doc.data()));
-
-                // Ordena Maior -> Menor Score
-                dailyData.sort((a, b) => b.score - a.score);
                 
                 if(dailyData.length === 0) {
                     listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
                     return;
+                }
+
+                // Cálculo do Percentual para ordenação
+                dailyData.forEach(item => {
+                    item.percent = (item.meta && item.meta > 0) ? (item.score / item.meta) : 0;
+                });
+
+                // Ordenação Dinâmica
+                if (rankingMode === 'absolute') {
+                    dailyData.sort((a, b) => b.score - a.score);
+                } else {
+                    dailyData.sort((a, b) => b.percent - a.percent);
                 }
 
                 let html = '';
@@ -1512,6 +1546,21 @@
                     const name = user ? user.nome.split(' ')[0] : item.matricula; 
                     const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index+1}`;
                     const colorClass = getPerformanceColor(item.score, item.meta);
+                    
+                    // Formatação do valor principal
+                    let mainValueDisplay = '';
+                    let subValueDisplay = '';
+
+                    const pctText = (item.percent * 100).toFixed(0) + '%';
+                    const scoreText = formatNumber(item.score);
+
+                    if (rankingMode === 'absolute') {
+                        mainValueDisplay = scoreText;
+                        subValueDisplay = `${pctText} da meta`;
+                    } else {
+                        mainValueDisplay = pctText;
+                        subValueDisplay = `${scoreText} prod.`;
+                    }
                     
                     html += `
                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -1523,7 +1572,8 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="block font-bold text-lg ${colorClass}">${formatNumber(item.score)}</span>
+                            <span class="block font-bold text-lg ${colorClass}">${mainValueDisplay}</span>
+                            <span class="text-[10px] text-gray-400 font-bold block -mt-1">${subValueDisplay}</span>
                         </div>
                     </div>`;
                 });
