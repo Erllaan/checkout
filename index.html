@@ -12,6 +12,8 @@
     <!-- PDF Libs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Html2Canvas (Para captura de imagem) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Ícones -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Fonte -->
@@ -396,12 +398,12 @@
                         </div>
 
                         <!-- Ranking do Dia (ATUALIZADO COM TOGGLE) -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit">
+                        <div id="ranking-card" class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit relative">
                             <div class="flex flex-col gap-2 mb-4 border-b pb-4">
                                 <div class="flex items-center justify-between">
                                     <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
                                         <i class="fas fa-trophy text-yellow-500"></i> Ranking
-                                        <button onclick="copyRanking()" class="text-gray-400 hover:text-blue-500 text-sm ml-2 p-1 rounded-full hover:bg-gray-100 transition" title="Copiar Ranking">
+                                        <button onclick="copyRanking()" class="text-gray-400 hover:text-blue-500 text-sm ml-2 p-1 rounded-full hover:bg-gray-100 transition" title="Copiar como Imagem">
                                             <i class="far fa-copy"></i>
                                         </button>
                                     </h3>
@@ -1601,43 +1603,63 @@
             }
         };
 
-        // --- FUNÇÃO COPIAR RANKING ---
-        window.copyRanking = () => {
-            const data = window.currentRankingData;
-            if(!data || data.length === 0) return showToast("Ranking vazio.", true);
+        // --- FUNÇÃO COPIAR RANKING COMO IMAGEM ---
+        window.copyRanking = async () => {
+            const element = document.getElementById('ranking-card');
+            const btn = document.querySelector('button[title="Copiar como Imagem"]');
+            const oldIcon = btn.innerHTML;
             
-            const dateVal = document.getElementById('ranking-date').value.split('-').reverse().join('/');
-            const modeText = rankingMode === 'absolute' ? "(Por Volume)" : "(Por %)";
-
-            let text = `🏆 *Ranking de Produtividade - ${dateVal}*\n${modeText}\n\n`;
-
-            data.forEach((item, index) => {
-                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
-                const pct = Math.round(item.percent * 100);
-                text += `${medal} *${item.name}* \n   └ ${formatNumber(item.score)} (${pct}%)\n`;
-            });
-
-            text += `\n📅 Gerado em: ${new Date().toLocaleTimeString()}`;
-
-            // Copia usando textarea oculta (compatibilidade iframe)
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed"; 
-            textArea.style.left = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+            // Feedback visual de carregamento
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
 
             try {
-                const successful = document.execCommand('copy');
-                if(successful) showToast("Ranking copiado para a área de transferência!");
-                else showToast("Erro ao copiar.", true);
-            } catch (err) {
-                console.error('Erro ao copiar', err);
-                showToast("Erro ao copiar.", true);
-            }
+                // Captura a div do ranking usando html2canvas
+                const canvas = await html2canvas(element, {
+                    scale: 2, // Melhora a resolução para telas retina/high-dpi
+                    backgroundColor: '#ffffff', // Garante fundo branco (evita transparência)
+                    useCORS: true, // Permite carregar recursos externos se necessário
+                    logging: false,
+                    onclone: (clonedDoc) => {
+                        // Esconde o próprio botão de copiar na imagem gerada para ficar mais limpo
+                        const btnClone = clonedDoc.querySelector('button[title="Copiar como Imagem"]');
+                        if(btnClone) btnClone.style.display = 'none';
+                    }
+                });
 
-            document.body.removeChild(textArea);
+                // Converte o canvas para Blob
+                canvas.toBlob(async (blob) => {
+                    try {
+                        // Tenta escrever no Clipboard API (Suporte moderno)
+                        if (navigator.clipboard && navigator.clipboard.write) {
+                            const item = new ClipboardItem({ 'image/png': blob });
+                            await navigator.clipboard.write([item]);
+                            showToast("Imagem do Ranking copiada! 📸");
+                        } else {
+                            throw new Error("Clipboard API não suportada neste contexto.");
+                        }
+                    } catch (clipboardErr) {
+                        console.warn("Falha ao copiar para clipboard, iniciando download...", clipboardErr);
+                        
+                        // Fallback: Se falhar (ex: contexto não seguro ou navegador antigo), baixa a imagem
+                        const link = document.createElement('a');
+                        link.download = `ranking_${getLocalToday()}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        showToast("Cópia direta falhou. Imagem baixada! 📥");
+                    }
+                    
+                    // Restaura o botão
+                    btn.innerHTML = oldIcon;
+                    btn.disabled = false;
+                }, 'image/png');
+
+            } catch (err) {
+                console.error("Erro geral no html2canvas:", err);
+                showToast("Erro ao gerar imagem.", true);
+                btn.innerHTML = oldIcon;
+                btn.disabled = false;
+            }
         };
 
         window.filterHistory = () => {
