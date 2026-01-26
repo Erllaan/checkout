@@ -401,6 +401,9 @@
                                 <div class="flex items-center justify-between">
                                     <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
                                         <i class="fas fa-trophy text-yellow-500"></i> Ranking
+                                        <button onclick="copyRanking()" class="text-gray-400 hover:text-blue-500 text-sm ml-2 p-1 rounded-full hover:bg-gray-100 transition" title="Copiar Ranking">
+                                            <i class="far fa-copy"></i>
+                                        </button>
                                     </h3>
                                     <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 w-32">
                                 </div>
@@ -649,6 +652,7 @@
         let reportUsersCache = []; // Guarda a lista de usuários únicos do relatório
         
         let rankingMode = 'absolute'; // 'absolute' ou 'percent'
+        window.currentRankingData = []; // Guarda dados atuais do ranking para cópia
 
         function getLocalToday() {
             const d = new Date();
@@ -1525,6 +1529,7 @@
                 
                 if(dailyData.length === 0) {
                     listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
+                    window.currentRankingData = []; // Limpa dados
                     return;
                 }
 
@@ -1539,6 +1544,17 @@
                 } else {
                     dailyData.sort((a, b) => b.percent - a.percent);
                 }
+
+                // Salva dados processados para função de Copiar
+                window.currentRankingData = dailyData.map(item => {
+                    const user = allCollaborators.find(c => c.matricula === item.matricula);
+                    return {
+                        name: user ? user.nome.split(' ')[0] : item.matricula,
+                        score: item.score,
+                        meta: item.meta,
+                        percent: item.percent
+                    };
+                });
 
                 let html = '';
                 dailyData.forEach((item, index) => {
@@ -1583,6 +1599,45 @@
                 console.error("Erro ao carregar ranking:", error);
                 listEl.innerHTML = '<p class="text-center text-red-400 text-sm py-4">Erro ao carregar.</p>';
             }
+        };
+
+        // --- FUNÇÃO COPIAR RANKING ---
+        window.copyRanking = () => {
+            const data = window.currentRankingData;
+            if(!data || data.length === 0) return showToast("Ranking vazio.", true);
+            
+            const dateVal = document.getElementById('ranking-date').value.split('-').reverse().join('/');
+            const modeText = rankingMode === 'absolute' ? "(Por Volume)" : "(Por %)";
+
+            let text = `🏆 *Ranking de Produtividade - ${dateVal}*\n${modeText}\n\n`;
+
+            data.forEach((item, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
+                const pct = Math.round(item.percent * 100);
+                text += `${medal} *${item.name}* \n   └ ${formatNumber(item.score)} (${pct}%)\n`;
+            });
+
+            text += `\n📅 Gerado em: ${new Date().toLocaleTimeString()}`;
+
+            // Copia usando textarea oculta (compatibilidade iframe)
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; 
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if(successful) showToast("Ranking copiado para a área de transferência!");
+                else showToast("Erro ao copiar.", true);
+            } catch (err) {
+                console.error('Erro ao copiar', err);
+                showToast("Erro ao copiar.", true);
+            }
+
+            document.body.removeChild(textArea);
         };
 
         window.filterHistory = () => {
