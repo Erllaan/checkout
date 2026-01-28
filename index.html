@@ -406,6 +406,10 @@
                     <button onclick="switchAdminTab('equipe')" id="tab-equipe" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
                         <i class="fas fa-users"></i> Equipe
                     </button>
+                    <!-- Nova Aba: Auditoria -->
+                    <button onclick="switchAdminTab('auditoria')" id="tab-auditoria" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
+                        <i class="fas fa-shield-alt"></i> Auditoria
+                    </button>
                 </div>
 
                 <!-- 1. Produtividade & Ranking -->
@@ -647,6 +651,35 @@
                         <div class="overflow-hidden rounded-xl border border-gray-200"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-4">Nome</th><th class="p-4">Login</th><th class="p-4">Função</th><th class="p-4">Meta</th><th class="p-4 text-right">Ações</th></tr></thead><tbody id="team-list-body" class="bg-white divide-y divide-gray-100"></tbody></table></div>
                     </div>
                 </div>
+                
+                <!-- 5. Auditoria (NOVO) -->
+                <div id="view-auditoria" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-3">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fas fa-shield-alt text-gray-600"></i> Logs de Auditoria</h3>
+                                <p class="text-xs text-gray-500">Monitoramento de ações realizadas por gestores.</p>
+                            </div>
+                            <button onclick="loadAuditLogs()" class="text-sm text-blue-500 font-medium hover:bg-blue-50 px-3 py-1 rounded transition"><i class="fas fa-sync"></i> Atualizar</button>
+                        </div>
+                        <div class="overflow-hidden rounded-xl border border-gray-200">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
+                                    <tr>
+                                        <th class="p-4">Data/Hora</th>
+                                        <th class="p-4">Gestor (Quem fez)</th>
+                                        <th class="p-4">Ação</th>
+                                        <th class="p-4">Detalhes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-list-body" class="bg-white divide-y divide-gray-100 text-gray-700">
+                                    <tr><td colspan="4" class="p-6 text-center text-gray-400">Carregando logs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- ÁREA DO COLABORADOR -->
@@ -800,6 +833,59 @@
                 cb.checked = selectedCollaborators.includes(cb.value);
             });
         }
+
+        // --- SISTEMA DE AUDITORIA (LOGS) ---
+        async function logSystemAction(action, target, details) {
+            if(!currentUserData) return;
+            try {
+                await addDoc(collection(db, "audit_logs"), {
+                    adminId: currentUserData.uid,
+                    adminName: currentUserData.nome,
+                    action: action,
+                    target: target || "Sistema",
+                    details: details || "",
+                    timestamp: serverTimestamp()
+                });
+            } catch(e) { console.error("Falha no log de auditoria", e); }
+        }
+
+        window.loadAuditLogs = async () => {
+            const tbody = document.getElementById('audit-list-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-400"><i class="fas fa-spinner fa-spin"></i> Carregando logs...</td></tr>';
+            try {
+                const q = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"), limit(50));
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                     tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-400">Nenhuma atividade registrada recentemente.</td></tr>';
+                     return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    let dateStr = "Recentemente";
+                    if(data.timestamp) {
+                        const dateObj = data.timestamp.toDate();
+                        dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString().slice(0,5);
+                    }
+                    
+                    let actionColor = "text-gray-700";
+                    if(data.action.includes("Exclusão")) actionColor = "text-red-600 font-bold";
+                    if(data.action.includes("Edição")) actionColor = "text-blue-600 font-bold";
+                    if(data.action.includes("Cadastro")) actionColor = "text-green-600 font-bold";
+
+                    html += `
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="p-4 text-xs font-mono text-gray-500">${dateStr}</td>
+                        <td class="p-4 font-bold text-gray-800">${data.adminName}</td>
+                        <td class="p-4 ${actionColor}">${data.action}</td>
+                        <td class="p-4 text-sm text-gray-600">${data.details}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Erro ao carregar logs.</td></tr>'; }
+        };
         
         window.saveBatchMeta = async () => {
             const metaRaw = document.getElementById('batch-meta-input').value;
@@ -824,6 +910,8 @@
                 }
             }
             
+            await logSystemAction('Edição em Massa', `${count} Colaboradores`, `Alterou meta padrão para: ${formatNumber(meta)}`);
+
             showToast(`Meta atualizada para ${count} pessoas!`);
             toggleBatchMetaModal();
             loadTeamList();
@@ -903,6 +991,7 @@
                 });
 
                 await batch.commit();
+                await logSystemAction('Edição em Massa', `${selectedProductivityIds.length} Itens`, `Alterou data para: ${newDate}`);
 
                 showToast(`${selectedProductivityIds.length} registros atualizados!`);
                 toggleBatchDateModal();
@@ -943,6 +1032,8 @@
                 });
                 await batch.commit();
                 
+                await logSystemAction('Exclusão em Massa', `${selectedProductivityIds.length} Itens`, `Removeu registros de produtividade`);
+
                 showToast(`${selectedProductivityIds.length} registros excluídos.`);
                 selectedProductivityIds = [];
                 updateBulkActionsUI();
@@ -955,11 +1046,17 @@
 
         window.switchAdminTab = (tabName) => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            ['lancamentos', 'equipe', 'erros', 'relatorios'].forEach(t => document.getElementById(`view-${t}`).classList.add('hidden'));
+            ['lancamentos', 'equipe', 'erros', 'relatorios', 'auditoria'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                if(el) el.classList.add('hidden');
+            });
             document.getElementById(`tab-${tabName}`).classList.add('active');
-            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            const view = document.getElementById(`view-${tabName}`);
+            if(view) view.classList.remove('hidden');
+            
             if(tabName === 'equipe') loadTeamList();
             if(tabName === 'erros') loadErrorHistory();
+            if(tabName === 'auditoria') loadAuditLogs();
             if(tabName === 'lancamentos' || tabName === 'erros' || tabName === 'relatorios') loadCollaboratorsForSelect();
         };
 
@@ -1005,6 +1102,7 @@
             const date = document.getElementById('edit-prod-date').value;
             const scoreRaw = document.getElementById('edit-prod-score').value;
             const metaRaw = document.getElementById('edit-prod-meta').value;
+            const mat = document.getElementById('edit-prod-matricula').value;
 
             const score = parsePtBrNumber(scoreRaw);
             const meta = parsePtBrNumber(metaRaw);
@@ -1017,6 +1115,8 @@
                     score: score, 
                     meta: meta 
                 });
+                await logSystemAction('Edição', mat, `Atualizou lançamento. Score: ${formatNumber(score)}, Meta: ${formatNumber(meta)}`);
+
                 showToast("Lançamento atualizado!");
                 toggleProdEditModal();
                 loadAdminData();
@@ -1041,6 +1141,7 @@
 
             try {
                 await updateDoc(doc(db, "users", uid), { nome, matricula, meta, role });
+                await logSystemAction('Edição de Usuário', matricula, `Atualizou dados do usuário ${nome} (${role})`);
                 showToast("Dados atualizados!");
                 toggleEditModal();
                 loadTeamList();
@@ -1095,6 +1196,8 @@
                     createdAt: serverTimestamp() 
                 });
                 await signOut(tempAuth);
+                await logSystemAction('Cadastro', m, `Criou novo usuário: ${n} (${role})`);
+
                 showToast(`Usuário (${role}) criado com sucesso!`);
                 
                 document.getElementById('new-user-name').value = '';
@@ -1229,7 +1332,12 @@
             }
 
             if(!confirm(`Remover ${nome}?`)) return;
-            try { await deleteDoc(doc(db, "users", uid)); showToast("Removido."); loadTeamList(); } 
+            try { 
+                await deleteDoc(doc(db, "users", uid)); 
+                await logSystemAction('Exclusão de Usuário', nome, `Removeu o usuário do sistema`);
+                showToast("Removido."); 
+                loadTeamList(); 
+            } 
             catch(e) { showToast("Erro.", true); }
         };
 
@@ -1237,6 +1345,7 @@
             if(!confirm("Tem certeza que deseja excluir este lançamento?")) return;
             try {
                 await deleteDoc(doc(db, "productivity", id));
+                await logSystemAction('Exclusão', `Prod ID: ${id}`, `Excluiu lançamento de produtividade`);
                 showToast("Lançamento excluído.");
                 loadAdminData(); 
             } catch(e) {
@@ -1266,12 +1375,17 @@
                 const q = query(collection(db, "productivity"), where("matricula", "==", matricula), where("date", "==", d));
                 const snap = await getDocs(q);
 
+                let action = '';
                 if (!snap.empty) {
                     const docId = snap.docs[0].id;
                     await updateDoc(doc(db, "productivity", docId), { score: s, meta: finalMeta, timestamp: serverTimestamp() });
+                    action = 'Atualizou';
                 } else {
                     await addDoc(collection(db, "productivity"), { date: d, matricula: matricula, score: s, meta: finalMeta, registeredBy: currentUserData.uid, timestamp: serverTimestamp() });
+                    action = 'Criou';
                 }
+                
+                await logSystemAction('Lançamento', matricula, `${action} registro. Score: ${formatNumber(s)}`);
 
                 showToast(`Lançamento salvo!`);
                 document.getElementById('input-score').value = '';
@@ -1776,6 +1890,7 @@
             if(!confirm("Excluir esta ocorrência?")) return;
             try {
                 await deleteDoc(doc(db, "errors", id));
+                await logSystemAction('Exclusão', `Erro ID: ${id}`, `Excluiu ocorrência de erro`);
                 showToast("Ocorrência removida.");
                 loadErrorHistory();
             } catch(e) { showToast("Erro ao excluir.", true); }
@@ -1791,6 +1906,7 @@
 
             try {
                 await addDoc(collection(db, "errors"), { date: d, matricula: m, description: desc, registeredBy: currentUserData.uid, timestamp: serverTimestamp() });
+                await logSystemAction('Ocorrência', m, `Registrou erro: "${desc.substring(0,20)}..."`);
                 showToast("Registrado!"); 
                 document.getElementById('error-desc').value = '';
                 document.getElementById('error-date').value = getLocalToday();
@@ -1802,11 +1918,13 @@
             const id = document.getElementById('edit-error-id').value;
             const d = document.getElementById('edit-error-date').value;
             const desc = document.getElementById('edit-error-desc').value;
+            const mat = document.getElementById('edit-error-matricula').value;
 
             if(!desc) return showToast("Descrição vazia.", true);
 
             try {
                 await updateDoc(doc(db, "errors", id), { date: d, description: desc });
+                await logSystemAction('Edição de Erro', mat, `Editou descrição da ocorrência`);
                 showToast("Ocorrência atualizada!");
                 toggleErrorEditModal();
                 loadErrorHistory();
