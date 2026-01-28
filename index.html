@@ -158,6 +158,67 @@
             </div>
         </div>
     </div>
+    
+    <!-- MODAL EDITAR LANÇAMENTO (PRODUTIVIDADE) -->
+    <div id="edit-prod-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                     <i class="fas fa-edit text-blue-500"></i> Editar Lançamento
+                </h3>
+                <button onclick="toggleProdEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="edit-prod-id">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Colaborador</label>
+                    <input type="text" id="edit-prod-matricula" class="w-full border rounded-lg p-2.5 mt-1 bg-gray-100 text-gray-500 font-mono text-sm" readonly>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Data</label>
+                    <input type="date" id="edit-prod-date" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Produção</label>
+                        <input type="text" id="edit-prod-score" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Meta</label>
+                        <input type="text" id="edit-prod-meta" class="w-full border rounded-lg p-2.5 mt-1 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 mt-6">
+                <button onclick="saveProdEdit()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIÇÃO DE DATA EM MASSA (NOVO) -->
+    <div id="batch-date-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in border border-blue-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                     <i class="fas fa-calendar-alt text-blue-500"></i> Mudar Data em Massa
+                </h3>
+                <button onclick="toggleBatchDateModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-4">Você está alterando a data de <span id="batch-count-display" class="font-bold text-blue-600">0</span> lançamentos selecionados.</p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nova Data</label>
+                    <input type="date" id="batch-new-date" class="w-full border rounded-lg p-3 mt-1 outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 font-bold">
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-2 mt-6">
+                <button onclick="applyBatchDate()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow">Aplicar Nova Data</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL DEFINIR META EM MASSA -->
     <div id="batch-meta-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
@@ -386,13 +447,39 @@
                             </div>
 
                             <!-- Histórico -->
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="font-bold text-gray-800 text-lg">Histórico Geral</h3>
-                                    <input type="text" id="filter-matricula" onkeyup="filterHistory()" placeholder="Buscar..." class="border rounded-lg p-2 text-xs w-32 outline-none focus:ring-1 focus:ring-blue-500">
+                                    <div class="flex gap-2">
+                                        <!-- BARRA DE AÇÕES EM MASSA (Oculta por padrão) -->
+                                        <div id="bulk-actions-bar" class="hidden flex items-center gap-2 animate-fade-in mr-2">
+                                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100"><span id="bulk-selected-count">0</span> selecionados</span>
+                                            <button onclick="toggleBatchDateModal()" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded transition shadow-sm flex items-center gap-1">
+                                                <i class="fas fa-calendar-alt"></i> Mudar Data
+                                            </button>
+                                            <button onclick="batchDeleteProd()" class="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded transition shadow-sm" title="Excluir Selecionados">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <input type="text" id="filter-matricula" onkeyup="filterHistory()" placeholder="Buscar..." class="border rounded-lg p-2 text-xs w-28 outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
                                 </div>
                                 <div class="overflow-hidden rounded-xl border border-gray-200">
-                                    <table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold"><tr><th class="p-3">Data</th><th class="p-3">Colab.</th><th class="p-3">Prod/Meta</th><th class="p-3 text-right"></th></tr></thead><tbody id="admin-history-body" class="bg-white divide-y divide-gray-100"></tbody></table>
+                                    <table class="w-full text-left text-sm">
+                                        <thead class="bg-gray-100 text-gray-500 uppercase text-xs font-bold">
+                                            <tr>
+                                                <th class="p-3 w-8 text-center">
+                                                    <input type="checkbox" onchange="toggleAllProdSelection(this)" class="rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                                </th>
+                                                <th class="p-3">Data</th>
+                                                <th class="p-3">Colab.</th>
+                                                <th class="p-3">Prod/Meta</th>
+                                                <th class="p-3 text-right"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-history-body" class="bg-white divide-y divide-gray-100"></tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -623,7 +710,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, orderBy, limit, serverTimestamp, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
         const firebaseConfig = {
             apiKey: "AIzaSyDr544e43_iKWNVL9UCKdKONM_s9_gGxTs",
@@ -646,6 +734,10 @@
         let allProductivityData = [];
         let allCollaborators = [];
         let selectedCollaborators = [];
+        
+        // --- SELEÇÃO DE PRODUTIVIDADE EM MASSA ---
+        let selectedProductivityIds = [];
+
         let toastTimeout;
         window.isRepairing = false;
 
@@ -743,6 +835,132 @@
             loadTeamList();
         };
 
+        // --- BATCH DATE UTILS (NOVO: EDIÇÃO DE DATA EM MASSA) ---
+        
+        // Toggle seleção de um item individual
+        window.toggleProdSelection = (id) => {
+            if (selectedProductivityIds.includes(id)) {
+                selectedProductivityIds = selectedProductivityIds.filter(i => i !== id);
+            } else {
+                selectedProductivityIds.push(id);
+            }
+            updateBulkActionsUI();
+        };
+
+        // Toggle selecionar todos os visíveis
+        window.toggleAllProdSelection = (checkbox) => {
+            const allCheckboxes = document.querySelectorAll('.prod-checkbox');
+            if (checkbox.checked) {
+                // Seleciona todos os visíveis
+                allCheckboxes.forEach(cb => {
+                    cb.checked = true;
+                    if (!selectedProductivityIds.includes(cb.value)) {
+                        selectedProductivityIds.push(cb.value);
+                    }
+                });
+            } else {
+                // Desmarca todos
+                allCheckboxes.forEach(cb => cb.checked = false);
+                selectedProductivityIds = [];
+            }
+            updateBulkActionsUI();
+        };
+
+        function updateBulkActionsUI() {
+            const bar = document.getElementById('bulk-actions-bar');
+            const countSpan = document.getElementById('bulk-selected-count');
+            const count = selectedProductivityIds.length;
+            
+            countSpan.innerText = count;
+            
+            if (count > 0) {
+                bar.classList.remove('hidden');
+            } else {
+                bar.classList.add('hidden');
+                // Desmarca o checkbox mestre se houver
+                const master = document.querySelector('input[onchange="toggleAllProdSelection(this)"]');
+                if(master) master.checked = false;
+            }
+        }
+
+        window.toggleBatchDateModal = () => {
+            const modal = document.getElementById('batch-date-modal');
+            const countDisplay = document.getElementById('batch-count-display');
+            
+            if (modal.classList.contains('hidden')) {
+                // Abrir
+                if (selectedProductivityIds.length === 0) return showToast("Selecione itens primeiro.", true);
+                countDisplay.innerText = selectedProductivityIds.length;
+                modal.classList.remove('hidden');
+            } else {
+                // Fechar
+                modal.classList.add('hidden');
+            }
+        };
+
+        window.applyBatchDate = async () => {
+            const newDate = document.getElementById('batch-new-date').value;
+            if (!newDate) return showToast("Selecione uma data.", true);
+            
+            const btn = document.querySelector('#batch-date-modal button');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            btn.disabled = true;
+
+            try {
+                // Usa Batch Write para eficiência e atomicidade (até 500 ops)
+                const batch = writeBatch(db);
+                
+                selectedProductivityIds.forEach(id => {
+                    const ref = doc(db, "productivity", id);
+                    batch.update(ref, { date: newDate });
+                });
+
+                await batch.commit();
+
+                showToast(`${selectedProductivityIds.length} registros atualizados!`);
+                toggleBatchDateModal();
+                
+                // Limpa seleção
+                selectedProductivityIds = [];
+                updateBulkActionsUI();
+                
+                // Atualiza lista e ranking
+                loadAdminData();
+                document.getElementById('ranking-date').value = newDate;
+                window.updateDailyRanking();
+
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao atualizar em massa.", true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.batchDeleteProd = async () => {
+            if (selectedProductivityIds.length === 0) return;
+            if (!confirm(`Tem certeza que deseja EXCLUIR ${selectedProductivityIds.length} registros?`)) return;
+
+            try {
+                const batch = writeBatch(db);
+                selectedProductivityIds.forEach(id => {
+                    const ref = doc(db, "productivity", id);
+                    batch.delete(ref);
+                });
+                await batch.commit();
+                
+                showToast(`${selectedProductivityIds.length} registros excluídos.`);
+                selectedProductivityIds = [];
+                updateBulkActionsUI();
+                loadAdminData();
+            } catch (err) {
+                console.error(err);
+                showToast("Erro ao excluir.", true);
+            }
+        };
+
         // --- UI UTILS ---
         window.switchAdminTab = (tabName) => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -778,6 +996,47 @@
             document.getElementById('edit-error-matricula').value = matricula;
             document.getElementById('edit-error-desc').value = desc;
             toggleErrorEditModal();
+        };
+
+        // NOVAS FUNÇÕES DE EDIÇÃO DE PRODUTIVIDADE
+        window.toggleProdEditModal = () => document.getElementById('edit-prod-modal').classList.toggle('hidden');
+        
+        window.openEditProd = (id, date, matricula, score, meta) => {
+            document.getElementById('edit-prod-id').value = id;
+            document.getElementById('edit-prod-matricula').value = matricula;
+            document.getElementById('edit-prod-date').value = date;
+            document.getElementById('edit-prod-score').value = formatNumber(score);
+            document.getElementById('edit-prod-meta').value = formatNumber(meta);
+            toggleProdEditModal();
+        };
+
+        window.saveProdEdit = async () => {
+            const id = document.getElementById('edit-prod-id').value;
+            const date = document.getElementById('edit-prod-date').value;
+            const scoreRaw = document.getElementById('edit-prod-score').value;
+            const metaRaw = document.getElementById('edit-prod-meta').value;
+
+            const score = parsePtBrNumber(scoreRaw);
+            const meta = parsePtBrNumber(metaRaw);
+
+            if(!date) return showToast("Data inválida.", true);
+
+            try {
+                await updateDoc(doc(db, "productivity", id), { 
+                    date: date, 
+                    score: score, 
+                    meta: meta 
+                });
+                showToast("Lançamento atualizado!");
+                toggleProdEditModal();
+                loadAdminData();
+                // Atualiza ranking se a data editada for a mesma que está sendo visualizada
+                const rankDate = document.getElementById('ranking-date').value;
+                if(date === rankDate) updateDailyRanking();
+            } catch(e) { 
+                console.error(e); 
+                showToast("Erro ao editar.", true); 
+            }
         };
 
         window.saveEditUser = async () => {
@@ -1496,247 +1755,6 @@
             }
         };
 
-        // --- MUDAR MODO DE RANKING ---
-        window.setRankingMode = (mode) => {
-            rankingMode = mode;
-            // Atualiza UI dos botões
-            const btnAbs = document.getElementById('btn-rank-abs');
-            const btnPct = document.getElementById('btn-rank-pct');
-            
-            if (mode === 'absolute') {
-                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
-                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
-            } else {
-                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
-                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
-            }
-            updateDailyRanking(); // Recarrega com o novo modo
-        };
-
-        // --- RANKING DO DIA (CORRIGIDO PARA BUSCAR NO BANCO E SUPORTAR PERCENTUAL) ---
-        window.updateDailyRanking = async () => {
-            const dateInput = document.getElementById('ranking-date');
-            const selectedDate = dateInput.value || getLocalToday();
-            const listEl = document.getElementById('ranking-list');
-
-            listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
-
-            try {
-                // Busca lançamentos especificamente da data selecionada
-                const q = query(collection(db, "productivity"), where("date", "==", selectedDate));
-                const snap = await getDocs(q);
-                
-                const dailyData = [];
-                snap.forEach(doc => dailyData.push(doc.data()));
-                
-                if(dailyData.length === 0) {
-                    listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
-                    window.currentRankingData = []; // Limpa dados
-                    return;
-                }
-
-                // Cálculo do Percentual para ordenação
-                dailyData.forEach(item => {
-                    item.percent = (item.meta && item.meta > 0) ? (item.score / item.meta) : 0;
-                });
-
-                // Ordenação Dinâmica
-                if (rankingMode === 'absolute') {
-                    dailyData.sort((a, b) => b.score - a.score);
-                } else {
-                    dailyData.sort((a, b) => b.percent - a.percent);
-                }
-
-                // Salva dados processados para função de Copiar
-                window.currentRankingData = dailyData.map(item => {
-                    const user = allCollaborators.find(c => c.matricula === item.matricula);
-                    return {
-                        name: user ? user.nome.split(' ')[0] : item.matricula,
-                        score: item.score,
-                        meta: item.meta,
-                        percent: item.percent
-                    };
-                });
-
-                let html = '';
-                dailyData.forEach((item, index) => {
-                    const user = allCollaborators.find(c => c.matricula === item.matricula);
-                    const name = user ? user.nome.split(' ')[0] : item.matricula; 
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index+1}`;
-                    const colorClass = getPerformanceColor(item.score, item.meta);
-                    
-                    // Formatação do valor principal
-                    let mainValueDisplay = '';
-                    let subValueDisplay = '';
-
-                    const pctText = (item.percent * 100).toFixed(0) + '%';
-                    const scoreText = formatNumber(item.score);
-
-                    if (rankingMode === 'absolute') {
-                        mainValueDisplay = scoreText;
-                        subValueDisplay = `${pctText} da meta`;
-                    } else {
-                        mainValueDisplay = pctText;
-                        subValueDisplay = `${scoreText} prod.`;
-                    }
-                    
-                    html += `
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <div class="flex items-center gap-3">
-                            <span class="text-lg font-bold w-6 text-center">${medal}</span>
-                            <div>
-                                <p class="font-bold text-gray-800 text-sm">${name}</p>
-                                <p class="text-[10px] text-gray-500">Meta: ${formatNumber(item.meta)}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block font-bold text-lg ${colorClass}">${mainValueDisplay}</span>
-                            <span class="text-[10px] text-gray-400 font-bold block -mt-1">${subValueDisplay}</span>
-                        </div>
-                    </div>`;
-                });
-                listEl.innerHTML = html;
-
-            } catch (error) {
-                console.error("Erro ao carregar ranking:", error);
-                listEl.innerHTML = '<p class="text-center text-red-400 text-sm py-4">Erro ao carregar.</p>';
-            }
-        };
-
-        // --- FUNÇÃO COPIAR RANKING COMO IMAGEM (V2 - Renderização Completa) ---
-        window.copyRanking = async () => {
-            const btn = document.querySelector('button[title="Copiar como Imagem"]');
-            const oldIcon = btn.innerHTML;
-            
-            // Feedback visual
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
-            try {
-                // 1. Preparar dados
-                const data = window.currentRankingData;
-                const dateVal = document.getElementById('ranking-date').value.split('-').reverse().join('/');
-                const modeText = rankingMode === 'absolute' ? "Volume de Produção" : "Performance (%)";
-                
-                if (!data || data.length === 0) {
-                     showToast("Ranking vazio.", true);
-                     btn.innerHTML = oldIcon;
-                     btn.disabled = false;
-                     return;
-                }
-
-                // 2. Criar Container Temporário para Exportação
-                // Este container será renderizado "fora da tela" mas visível para o html2canvas renderizar corretamente
-                const exportContainer = document.createElement('div');
-                exportContainer.style.position = 'absolute';
-                exportContainer.style.top = '-9999px';
-                exportContainer.style.left = '-9999px';
-                exportContainer.style.width = '600px'; // Largura boa para leitura
-                exportContainer.style.backgroundColor = '#ffffff';
-                exportContainer.style.fontFamily = "'Inter', sans-serif";
-                exportContainer.style.padding = '40px';
-                exportContainer.style.borderRadius = '20px'; // Apenas estético se fosse salvo com transparência, mas aqui será fundo branco
-                exportContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'; // Estética
-                
-                // Conteúdo HTML do Card
-                let listHtml = '';
-                data.forEach((item, index) => {
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `<span style="font-size: 1.2rem; font-weight: 800; color: #6B7280;">#${index+1}</span>`;
-                    
-                    // Formatação
-                    const pctText = (item.percent * 100).toFixed(0) + '%';
-                    const scoreText = formatNumber(item.score);
-                    let mainVal, subVal, barWidth, barColor;
-
-                    if (rankingMode === 'absolute') {
-                        mainVal = scoreText;
-                        subVal = `${pctText} da meta`;
-                    } else {
-                        mainVal = pctText;
-                        subVal = `${scoreText} prod.`;
-                    }
-                    
-                    // Cor baseada na meta
-                    const ratio = item.meta > 0 ? (item.score / item.meta) : 0;
-                    let color = '#ef4444'; // red
-                    if (ratio >= 1.0) color = '#10b981'; // green
-                    else if (ratio >= 0.85) color = '#eab308'; // yellow
-
-                    listHtml += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
-                            <div style="display: flex; align-items: center; gap: 20px;">
-                                <div style="width: 40px; text-align: center; font-size: 1.5rem;">${medal}</div>
-                                <div>
-                                    <div style="font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 4px;">${item.name}</div>
-                                    <div style="font-size: 0.85rem; color: #9ca3af;">Meta: ${formatNumber(item.meta)}</div>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 1.25rem; font-weight: 800; color: ${color};">${mainVal}</div>
-                                <div style="font-size: 0.85rem; color: #9ca3af; font-weight: 600;">${subVal}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                exportContainer.innerHTML = `
-                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f3f4f6; padding-bottom: 20px;">
-                        <div style="width: 60px; height: 60px; background-color: #2563EB; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32px" height="32px"><path d="M5 2H2V6C2 8.20914 3.79086 10 6 10H7V12C7 14.2091 8.79086 16 11 16H13C15.2091 16 17 14.2091 17 12V10H18C20.2091 10 22 8.20914 22 6V2H19V6C19 6.55228 18.5523 7 18 7H17V2H15V10H9V2H7V7H6C5.44772 7 5 6.55228 5 6V2ZM12 18C9.5 18 8 19 8 20V22H16V20C16 19 14.5 18 12 18Z"></path></svg>
-                        </div>
-                        <h2 style="font-size: 1.8rem; font-weight: 800; color: #111827; margin: 0;">Ranking do Dia</h2>
-                        <p style="font-size: 1rem; color: #6B7280; margin: 5px 0 0 0;">${dateVal} • ${modeText}</p>
-                    </div>
-                    <div style="background-color: #f9fafb; border-radius: 12px; padding: 10px 20px;">
-                        ${listHtml}
-                    </div>
-                    <div style="margin-top: 30px; text-align: center;">
-                        <p style="font-size: 0.8rem; color: #d1d5db; font-weight: 500;">Gerado por Checkout System • ${new Date().toLocaleTimeString()}</p>
-                    </div>
-                `;
-
-                document.body.appendChild(exportContainer);
-
-                // 3. Gerar Imagem
-                const canvas = await html2canvas(exportContainer, {
-                    scale: 2, // Retinap
-                    backgroundColor: '#ffffff',
-                    logging: false
-                });
-
-                // 4. Copiar/Baixar
-                canvas.toBlob(async (blob) => {
-                    try {
-                        if (navigator.clipboard && navigator.clipboard.write) {
-                            const item = new ClipboardItem({ 'image/png': blob });
-                            await navigator.clipboard.write([item]);
-                            showToast("Imagem Completa Copiada! 📸");
-                        } else {
-                            throw new Error("Clipboard API fail");
-                        }
-                    } catch (err) {
-                        const link = document.createElement('a');
-                        link.download = `ranking_completo_${dateVal.replace(/\//g,'-')}.png`;
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                        showToast("Imagem Baixada (Cópia falhou) 📥");
-                    }
-                    
-                    // Limpeza
-                    document.body.removeChild(exportContainer);
-                    btn.innerHTML = oldIcon;
-                    btn.disabled = false;
-                }, 'image/png');
-
-            } catch (err) {
-                console.error("Erro ao gerar imagem completa:", err);
-                showToast("Erro ao gerar imagem.", true);
-                if(document.querySelector('div[style*="-9999px"]')) document.body.removeChild(document.querySelector('div[style*="-9999px"]'));
-                btn.innerHTML = oldIcon;
-                btn.disabled = false;
-            }
-        };
-
         window.filterHistory = () => {
             const term = document.getElementById('filter-matricula').value.trim();
             if(!term) { renderHistoryTable(allProductivityData.slice(0, 20)); return; }
@@ -1746,16 +1764,24 @@
 
         function renderHistoryTable(data) {
             const tb = document.getElementById('admin-history-body');
-            if(data.length === 0) { tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Nada encontrado.</td></tr>'; return; }
+            if(data.length === 0) { tb.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">Nada encontrado.</td></tr>'; return; }
             let h = ''; 
             data.forEach(v => {
                 const color = getPerformanceColor(v.score, v.meta);
-                h += `<tr class="border-b">
+                const isSelected = selectedProductivityIds.includes(v.id);
+                
+                h += `<tr class="border-b ${isSelected ? 'bg-blue-50' : ''}">
+                    <td class="p-3 text-center">
+                        <input type="checkbox" value="${v.id}" class="prod-checkbox rounded text-blue-600 focus:ring-blue-500 cursor-pointer" 
+                               ${isSelected ? 'checked' : ''} 
+                               onchange="toggleProdSelection('${v.id}')">
+                    </td>
                     <td class="p-3 text-gray-500 text-xs">${v.date.split('-').reverse().join('/')}</td>
                     <td class="p-3 font-bold text-gray-700 text-sm">${v.matricula}</td>
                     <td class="p-3 ${color} font-bold text-sm">${formatNumber(v.score)} <span class="text-gray-300 text-[10px]">/${formatNumber(v.meta)||'?'}</span></td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteProductivity('${v.id}')" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    <td class="p-3 text-right flex justify-end gap-2">
+                        <button onclick="openEditProd('${v.id}', '${v.date}', '${v.matricula}', ${v.score}, ${v.meta})" class="text-blue-400 hover:text-blue-600 p-1"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteProductivity('${v.id}')" class="text-gray-400 hover:text-red-500 p-1"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             });
