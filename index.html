@@ -195,7 +195,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDIÇÃO DE DATA EM MASSA (NOVO) -->
+    <!-- MODAL EDIÇÃO DE DATA EM MASSA -->
     <div id="batch-date-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in border border-blue-100">
             <div class="flex justify-between items-center mb-4">
@@ -273,7 +273,7 @@
             </div>
         </div>
 
-        <!-- BARRA DE FERRAMENTAS DE FEEDBACK (NOVO) -->
+        <!-- BARRA DE FERRAMENTAS DE FEEDBACK -->
         <div id="feedback-controls" class="bg-blue-50/50 border-b border-blue-100 px-6 py-3 flex flex-wrap items-center gap-4 hidden">
             <div class="flex items-center gap-2">
                 <i class="fas fa-comment-dots text-blue-500"></i>
@@ -484,7 +484,7 @@
                             </div>
                         </div>
 
-                        <!-- Ranking do Dia (ATUALIZADO COM TOGGLE) -->
+                        <!-- Ranking do Dia (ATUALIZADO COM BOTÃO DE REFRESH) -->
                         <div id="ranking-card" class="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 h-fit relative">
                             <div class="flex flex-col gap-2 mb-4 border-b pb-4">
                                 <div class="flex items-center justify-between">
@@ -494,7 +494,13 @@
                                             <i class="far fa-copy"></i>
                                         </button>
                                     </h3>
-                                    <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 w-32">
+                                    <div class="flex items-center gap-2">
+                                        <input type="date" id="ranking-date" onchange="updateDailyRanking()" class="border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 w-28">
+                                        <!-- BOTÃO DE REFRESH ADICIONADO AQUI -->
+                                        <button onclick="updateDailyRanking()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 w-7 h-7 flex items-center justify-center rounded-lg transition" title="Forçar Atualização">
+                                            <i class="fas fa-sync-alt text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <!-- Toggle de Modo -->
                                 <div class="flex bg-gray-100 p-1 rounded-lg">
@@ -509,7 +515,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Relatórios (ATUALIZADO) -->
+                <!-- 2. Relatórios -->
                 <div id="view-relatorios" class="hidden fade-in space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-purple-100 p-6 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -mr-6 -mt-6"></div>
@@ -542,7 +548,6 @@
                                     <button onclick="setReportDate('week')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Semana</button>
                                     <button onclick="setReportDate('month')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded text-xs font-bold">Mês</button>
                                 </div>
-                                <!-- BOTOES DE ACAO -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <button onclick="viewReport()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-lg shadow transition flex items-center justify-center gap-2">
                                         <i class="fas fa-eye"></i> Visualizar
@@ -560,7 +565,6 @@
                 <div id="view-erros" class="hidden fade-in space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
-                        <!-- Coluna 1: Formulário -->
                         <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-red-100 p-6 relative overflow-hidden h-fit">
                             <div class="absolute top-0 right-0 w-20 h-20 bg-red-50 rounded-bl-full -mr-4 -mt-4"></div>
                             <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
@@ -583,7 +587,6 @@
                             </form>
                         </div>
 
-                        <!-- Coluna 2: Lista de Ocorrências -->
                         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <div class="flex justify-between items-center mb-4 border-b pb-3">
                                 <h3 class="font-bold text-gray-800 text-lg">Histórico de Divergências</h3>
@@ -609,7 +612,7 @@
                     </div>
                 </div>
 
-                <!-- 4. Equipe (ATUALIZADO) -->
+                <!-- 4. Equipe -->
                 <div id="view-equipe" class="hidden fade-in space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
@@ -650,7 +653,6 @@
             <div id="colaborador-panel" class="hidden fade-in space-y-6">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Resultado -->
                     <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden group hover:shadow-md transition">
                         <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
                         <h4 id="productivity-title" class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Produção</h4>
@@ -660,11 +662,9 @@
                         </div>
                         <div id="today-feedback" class="inline-flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-xs font-bold">Aguardando dados...</div>
                         
-                        <!-- NOVO: ALERTAS DE META -->
                         <div id="productivity-alerts" class="mt-4 space-y-2"></div>
                     </div>
                     
-                    <!-- Painel de Erros -->
                     <div id="error-card-container" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group hover:shadow-md transition">
                          <div id="no-errors-view" class="h-full flex flex-col items-center justify-center text-center opacity-50">
                             <i class="fas fa-check-circle text-6xl text-green-200 mb-4"></i>
@@ -676,7 +676,6 @@
                                     <i class="fas fa-exclamation-triangle"></i>
                                     <h4 class="font-bold uppercase tracking-widest text-xs">Ocorrências</h4>
                                 </div>
-                                <!-- NOVO: Badge de Contagem -->
                                 <span id="error-count-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide"></span>
                             </div>
                             <div id="errors-list" class="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin"></div>
@@ -684,13 +683,11 @@
                     </div>
                 </div>
 
-                <!-- Gráfico -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 class="font-bold text-gray-800 mb-4">Minha Evolução</h3>
                     <div class="relative h-64 w-full"><canvas id="productivityChart"></canvas></div>
                 </div>
 
-                <!-- Histórico -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-4 border-b bg-gray-50 text-sm font-bold text-gray-700">Histórico Completo</div>
                     <div id="history-list" class="max-h-60 overflow-y-auto scrollbar-thin"></div>
@@ -735,18 +732,16 @@
         let allCollaborators = [];
         let selectedCollaborators = [];
         
-        // --- SELEÇÃO DE PRODUTIVIDADE EM MASSA ---
         let selectedProductivityIds = [];
 
         let toastTimeout;
         window.isRepairing = false;
 
-        // --- CACHE DE DADOS DO RELATÓRIO ---
-        let reportDataCache = []; // Guarda os dados brutos carregados
-        let reportUsersCache = []; // Guarda a lista de usuários únicos do relatório
+        let reportDataCache = []; 
+        let reportUsersCache = []; 
         
-        let rankingMode = 'absolute'; // 'absolute' ou 'percent'
-        window.currentRankingData = []; // Guarda dados atuais do ranking para cópia
+        let rankingMode = 'absolute'; 
+        window.currentRankingData = []; 
 
         function getLocalToday() {
             const d = new Date();
@@ -785,10 +780,9 @@
             return 'bg-red-100 text-red-700';
         }
 
-        // --- BATCH META UTILS (Agora usado no modal de Equipe) ---
         window.toggleBatchMetaModal = () => {
             document.getElementById('batch-meta-modal').classList.toggle('hidden');
-            selectedCollaborators = []; // Limpa seleção ao abrir/fechar
+            selectedCollaborators = []; 
             updateBatchSelectionUI();
         };
 
@@ -835,9 +829,8 @@
             loadTeamList();
         };
 
-        // --- BATCH DATE UTILS (NOVO: EDIÇÃO DE DATA EM MASSA) ---
+        // --- BATCH DATE UTILS ---
         
-        // Toggle seleção de um item individual
         window.toggleProdSelection = (id) => {
             if (selectedProductivityIds.includes(id)) {
                 selectedProductivityIds = selectedProductivityIds.filter(i => i !== id);
@@ -847,11 +840,9 @@
             updateBulkActionsUI();
         };
 
-        // Toggle selecionar todos os visíveis
         window.toggleAllProdSelection = (checkbox) => {
             const allCheckboxes = document.querySelectorAll('.prod-checkbox');
             if (checkbox.checked) {
-                // Seleciona todos os visíveis
                 allCheckboxes.forEach(cb => {
                     cb.checked = true;
                     if (!selectedProductivityIds.includes(cb.value)) {
@@ -859,7 +850,6 @@
                     }
                 });
             } else {
-                // Desmarca todos
                 allCheckboxes.forEach(cb => cb.checked = false);
                 selectedProductivityIds = [];
             }
@@ -877,7 +867,6 @@
                 bar.classList.remove('hidden');
             } else {
                 bar.classList.add('hidden');
-                // Desmarca o checkbox mestre se houver
                 const master = document.querySelector('input[onchange="toggleAllProdSelection(this)"]');
                 if(master) master.checked = false;
             }
@@ -888,16 +877,15 @@
             const countDisplay = document.getElementById('batch-count-display');
             
             if (modal.classList.contains('hidden')) {
-                // Abrir
                 if (selectedProductivityIds.length === 0) return showToast("Selecione itens primeiro.", true);
                 countDisplay.innerText = selectedProductivityIds.length;
                 modal.classList.remove('hidden');
             } else {
-                // Fechar
                 modal.classList.add('hidden');
             }
         };
 
+        // CORREÇÃO: Função atualizada para forçar refresh correto
         window.applyBatchDate = async () => {
             const newDate = document.getElementById('batch-new-date').value;
             if (!newDate) return showToast("Selecione uma data.", true);
@@ -908,9 +896,7 @@
             btn.disabled = true;
 
             try {
-                // Usa Batch Write para eficiência e atomicidade (até 500 ops)
                 const batch = writeBatch(db);
-                
                 selectedProductivityIds.forEach(id => {
                     const ref = doc(db, "productivity", id);
                     batch.update(ref, { date: newDate });
@@ -921,14 +907,20 @@
                 showToast(`${selectedProductivityIds.length} registros atualizados!`);
                 toggleBatchDateModal();
                 
-                // Limpa seleção
                 selectedProductivityIds = [];
                 updateBulkActionsUI();
                 
-                // Atualiza lista e ranking
-                loadAdminData();
+                // --- SEQUÊNCIA DE REFRESH FORÇADO ---
+                // 1. Atualiza tabela
+                loadAdminData(); 
+                
+                // 2. Define data no calendário do ranking
                 document.getElementById('ranking-date').value = newDate;
-                window.updateDailyRanking();
+                
+                // 3. Aguarda 500ms para propagação e chama update
+                setTimeout(() => {
+                    window.updateDailyRanking();
+                }, 500);
 
             } catch (err) {
                 console.error(err);
@@ -961,7 +953,6 @@
             }
         };
 
-        // --- UI UTILS ---
         window.switchAdminTab = (tabName) => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             ['lancamentos', 'equipe', 'erros', 'relatorios'].forEach(t => document.getElementById(`view-${t}`).classList.add('hidden'));
@@ -998,7 +989,6 @@
             toggleErrorEditModal();
         };
 
-        // NOVAS FUNÇÕES DE EDIÇÃO DE PRODUTIVIDADE
         window.toggleProdEditModal = () => document.getElementById('edit-prod-modal').classList.toggle('hidden');
         
         window.openEditProd = (id, date, matricula, score, meta) => {
@@ -1030,7 +1020,6 @@
                 showToast("Lançamento atualizado!");
                 toggleProdEditModal();
                 loadAdminData();
-                // Atualiza ranking se a data editada for a mesma que está sendo visualizada
                 const rankDate = document.getElementById('ranking-date').value;
                 if(date === rankDate) updateDailyRanking();
             } catch(e) { 
@@ -1077,7 +1066,6 @@
             }
         };
 
-        // --- CADASTRAR NOVO USUÁRIO (COLABORADOR OU GESTOR) ---
         window.registerUser = async () => {
             const n = document.getElementById('new-user-name').value;
             const m = document.getElementById('new-user-login').value;
@@ -1088,22 +1076,19 @@
 
             if(!n || !m) return showToast("Preencha nome e login.", true);
             
-            // Define a senha: se não informada, usa o login. Se < 6 chars, faz pad.
             let p = passInput || m;
             let passFinal = p.length < 6 ? p.padEnd(6, '0') : p;
 
-            // Usa instância secundária para não deslogar o admin atual
             const tempApp = initializeApp(firebaseConfig, "sec");
             const tempAuth = getAuth(tempApp);
 
-            // Se for email real, usa. Se for matrícula, adiciona domínio falso.
             let emailFinal = m.includes('@') ? m : m + SYSTEM_DOMAIN;
 
             try {
                 const cred = await createUserWithEmailAndPassword(tempAuth, emailFinal, passFinal);
                 await setDoc(doc(db, "users", cred.user.uid), { 
                     nome: n, 
-                    matricula: m, // Salva o que foi digitado como identificador visual
+                    matricula: m, 
                     email: emailFinal,
                     role: role, 
                     meta: meta, 
@@ -1112,7 +1097,6 @@
                 await signOut(tempAuth);
                 showToast(`Usuário (${role}) criado com sucesso!`);
                 
-                // Limpa campos
                 document.getElementById('new-user-name').value = '';
                 document.getElementById('new-user-login').value = '';
                 document.getElementById('new-user-pass').value = '';
@@ -1134,7 +1118,6 @@
                 snap.forEach(doc => allCollaborators.push(doc.data()));
                 allCollaborators.sort((a, b) => a.nome.localeCompare(b.nome));
 
-                // --- SELECT SIMPLES (Produtividade, Ocorrências, Relatórios) ---
                 const simpleOptions = '<option value="">Selecione...</option>' + 
                     allCollaborators.map(u => `<option value="${u.matricula}">${u.nome} - ${u.matricula}</option>`).join('');
                 
@@ -1146,7 +1129,6 @@
                 if(selError) selError.innerHTML = simpleOptions;
                 if(selReport) selReport.innerHTML = '<option value="">Todos</option>' + allCollaborators.map(u => `<option value="${u.matricula}">${u.nome}</option>`).join('');
 
-                // --- CHECKBOX LIST (Para Meta em Massa na aba Equipe) ---
                 const batchList = document.getElementById('batch-meta-list');
                 if (batchList) {
                     let itemsHtml = '';
@@ -1170,7 +1152,6 @@
             } catch(e) { console.error(e); }
         };
 
-        // AUTO-FILL META (Select Simples)
         window.autoFillMeta = () => {
             const mat = document.getElementById('input-matricula').value;
             const user = allCollaborators.find(u => u.matricula === mat);
@@ -1187,26 +1168,21 @@
             
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center"><i class="fas fa-spinner fa-spin"></i></td></tr>';
             try {
-                // Carrega TODOS (Sem filtro de role, para ver admins também)
                 const q = query(collection(db, "users")); 
                 const snap = await getDocs(q);
                 let html = '';
                 const users = [];
                 snap.forEach(doc => users.push({id: doc.id, ...doc.data()}));
                 
-                // Ordena: Admins primeiro, depois alfabético ou por data
                 users.sort((a, b) => {
-                    // Mantém admins no topo
                     if (a.role === 'admin' && b.role !== 'admin') return -1;
                     if (a.role !== 'admin' && b.role === 'admin') return 1;
 
                     if (sortMode === 'date') {
-                        // Data de Cadastro (Mais recentes primeiro)
                         const dateA = a.createdAt?.seconds || 0;
                         const dateB = b.createdAt?.seconds || 0;
                         return dateB - dateA;
                     } else {
-                        // Alfabética
                         return a.nome.localeCompare(b.nome);
                     }
                 });
@@ -1249,7 +1225,7 @@
             try {
                 await deleteDoc(doc(db, "productivity", id));
                 showToast("Lançamento excluído.");
-                loadAdminData(); // Reload list
+                loadAdminData(); 
             } catch(e) {
                 console.error(e);
                 showToast("Erro ao excluir.", true);
@@ -1266,7 +1242,6 @@
             if(!matricula) return showToast("Selecione um colaborador", true);
 
             try {
-                // Define qual meta usar
                 let finalMeta = 0;
                 if (inputMetaRaw && inputMetaRaw !== "") {
                     finalMeta = parsePtBrNumber(inputMetaRaw);
@@ -1275,7 +1250,6 @@
                     finalMeta = user ? (user.meta || 0) : 0;
                 }
 
-                // VERIFICA SE JÁ EXISTE NO BANCO PARA ATUALIZAR
                 const q = query(collection(db, "productivity"), where("matricula", "==", matricula), where("date", "==", d));
                 const snap = await getDocs(q);
 
@@ -1287,11 +1261,9 @@
                 }
 
                 showToast(`Lançamento salvo!`);
-                // LIMPA FORM MENOS A DATA
                 document.getElementById('input-score').value = '';
                 document.getElementById('input-meta').value = '';
                 
-                // --- Sincroniza a data do ranking com a data lançada ---
                 document.getElementById('ranking-date').value = d;
 
                 loadAdminData();
@@ -1305,12 +1277,10 @@
                 allProductivityData = []; 
                 snap.forEach(d => allProductivityData.push({ id: d.id, ...d.data() }));
                 renderHistoryTable(allProductivityData.slice(0, 20));
-                // Chama a função globalmente agora
                 window.updateDailyRanking(); 
             } catch (err) { console.error(err); }
         }
 
-        // --- RELATÓRIOS PDF E VISUALIZAÇÃO ---
         window.setReportDate = (type) => {
             const today = new Date();
             const startInp = document.getElementById('report-start');
@@ -1322,8 +1292,8 @@
                 startInp.value = formatDate(today);
                 endInp.value = formatDate(today);
             } else if (type === 'week') {
-                const first = new Date(today.setDate(today.getDate() - today.getDay())); // Domingo
-                const last = new Date(today.setDate(today.getDate() - today.getDay() + 6)); // Sabado
+                const first = new Date(today.setDate(today.getDate() - today.getDay())); 
+                const last = new Date(today.setDate(today.getDate() - today.getDay() + 6));
                 startInp.value = formatDate(first);
                 endInp.value = formatDate(last);
             } else if (type === 'month') {
@@ -1345,7 +1315,6 @@
 
              if (!start || !end) { showToast("Defina as datas.", true); return null; }
 
-             // Fetch dados
              let q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end));
              if (mat) q = query(collection(db, "productivity"), where("date", ">=", start), where("date", "<=", end), where("matricula", "==", mat));
 
@@ -1353,12 +1322,10 @@
              const data = [];
              snap.forEach(d => data.push(d.data()));
              
-             // Ordenar por data
              data.sort((a, b) => a.date.localeCompare(b.date));
              return { data, start, end };
         }
 
-        // --- NOVA FUNÇÃO DE VISUALIZAÇÃO COM FILTRO E FEEDBACK ---
         window.viewReport = async () => {
             const result = await fetchReportData();
             if(!result) return;
@@ -1366,21 +1333,16 @@
 
             if (data.length === 0) return showToast("Sem dados no período.", true);
 
-            // Armazena no cache global
             reportDataCache = data;
             
-            // Abre Modal
             document.getElementById('preview-report-modal').classList.remove('hidden');
             document.getElementById('preview-period-text').innerText = `Período: ${start.split('-').reverse().join('/')} a ${end.split('-').reverse().join('/')}`;
 
-            // POPULA O SELECT DE FILTRO E DE FOCO
-            // Extrai usuários únicos do relatório
             const uniqueMats = [...new Set(data.map(item => item.matricula))];
             
             const filterSelect = document.getElementById('preview-filter-user');
             const focusSelect = document.getElementById('preview-focus-user');
             
-            // Opções
             let optionsHtmlFilter = '<option value="all">Equipe (Todos)</option>';
             let optionsHtmlFocus = '<option value="">Nenhum (Visão Geral)</option>';
 
@@ -1397,39 +1359,32 @@
 
             focusSelect.innerHTML = optionsHtmlFocus;
             focusSelect.value = '';
-            document.getElementById('preview-hide-names').checked = false; // Reset checkbox
+            document.getElementById('preview-hide-names').checked = false;
 
-            // Renderiza Dashboard Inicial
             updateReportView();
         };
 
-        // --- FUNÇÃO CENTRAL DE ATUALIZAÇÃO DO DASHBOARD ---
         window.updateReportView = () => {
             const filterVal = document.getElementById('preview-filter-user').value;
             const focusVal = document.getElementById('preview-focus-user').value;
             const hideOthers = document.getElementById('preview-hide-names').checked;
             const feedbackControls = document.getElementById('feedback-controls');
 
-            // Lógica de Exibição dos Controles de Feedback
             if(filterVal === 'all') {
                 feedbackControls.classList.remove('hidden');
             } else {
                 feedbackControls.classList.add('hidden');
             }
 
-            // Decide o Modo de Renderização
             if (filterVal === 'all') {
-                // Modo TODOS: Permite Foco e Ocultação
                 renderPreviewDashboard(reportDataCache, 'all', focusVal, hideOthers);
             } else {
-                // Modo SINGLE: Apenas dados daquele usuário (Filtra o array)
                 const filteredData = reportDataCache.filter(d => d.matricula === filterVal);
                 renderPreviewDashboard(filteredData, 'single', null, false);
             }
         };
 
         function renderPreviewDashboard(data, mode, focusMatricula = null, hideOthers = false) {
-            // 1. Cálculos de Estatísticas
             let totalProd = 0;
             let maxProd = 0;
             let maxDay = '-';
@@ -1442,19 +1397,16 @@
             data.forEach(d => {
                 totalProd += d.score;
                 
-                // Melhor Dia
                 if(d.score > maxProd) { 
                     maxProd = d.score; 
                     maxDay = d.date.split('-').reverse().slice(0,2).join('/'); 
                 }
                 
-                // Pior Dia
                 if(d.score < minProd) {
                     minProd = d.score;
                     minDay = d.date.split('-').reverse().slice(0,2).join('/');
                 }
                 
-                // Maps
                 if(!personMap[d.matricula]) personMap[d.matricula] = 0;
                 personMap[d.matricula] += d.score;
 
@@ -1464,7 +1416,6 @@
 
             if (minProd === Infinity) minProd = 0;
 
-            // 2. Atualiza Cards
             document.getElementById('preview-total-prod').innerText = formatNumber(totalProd);
             
             const daysCount = Object.keys(dayMap).length || 1;
@@ -1476,12 +1427,10 @@
             document.getElementById('preview-worst-day').innerText = minDay;
             document.getElementById('preview-worst-val').innerText = `${formatNumber(minProd)}`;
 
-            // 3. Atualiza Tabela e Prepara Nomes para Gráficos
             const tbody = document.getElementById('preview-table-body');
             tbody.innerHTML = '';
             document.getElementById('table-row-count').innerText = `${data.length} registros`;
 
-            // Helper para anonimizar nomes
             const getDisplayName = (matricula, realName) => {
                 if (!hideOthers) return realName; 
                 if (focusMatricula && matricula === focusMatricula) return realName; 
@@ -1495,7 +1444,6 @@
 
                  const performance = row.meta > 0 ? Math.round((row.score/row.meta)*100) + '%' : '-';
                  
-                 // Highlight na tabela se for o foco
                  const isFocused = focusMatricula && row.matricula === focusMatricula;
                  const rowClass = isFocused ? "bg-blue-50 border-l-4 border-blue-500" : "hover:bg-gray-50";
 
@@ -1509,10 +1457,8 @@
                  tbody.innerHTML += tr;
             });
 
-            // 4. Atualiza Gráficos (Diferente para 'all' e 'single')
             const sortedDays = Object.keys(dayMap).sort();
             
-            // --- GRÁFICO 2 (Direita) - Sempre Timeline ---
             if(previewChart2) previewChart2.destroy();
             const ctx2 = document.getElementById('previewChartTimeline').getContext('2d');
             
@@ -1534,28 +1480,25 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // --- GRÁFICO 1 (Esquerda) ---
             if(previewChart1) previewChart1.destroy();
             const ctx1 = document.getElementById('previewChartRanking').getContext('2d');
 
             if (mode === 'all') {
-                // MODO TODOS: Ranking de Pessoas
                 document.getElementById('chart-title-1').innerText = "Top Produtividade";
                 const sortedPeople = Object.keys(personMap).map(m => {
                     const u = allCollaborators.find(c => c.matricula === m);
                     const realName = u ? u.nome.split(' ')[0] : m;
                     return { 
-                        name: getDisplayName(m, realName), // Aplica anonimização
+                        name: getDisplayName(m, realName), 
                         matricula: m,
                         score: personMap[m] 
                     };
                 }).sort((a,b) => b.score - a.score).slice(0, 10);
 
-                // Lógica de Cores do Gráfico
                 const barColors = sortedPeople.map(p => {
-                    if (focusMatricula && p.matricula === focusMatricula) return '#2563EB'; // Azul Forte (Foco)
-                    if (focusMatricula) return '#E5E7EB'; // Cinza Claro (Outros, quando há foco)
-                    return '#3B82F6'; // Azul Padrão (Sem foco)
+                    if (focusMatricula && p.matricula === focusMatricula) return '#2563EB'; 
+                    if (focusMatricula) return '#E5E7EB'; 
+                    return '#3B82F6'; 
                 });
 
                 previewChart1 = new Chart(ctx1, {
@@ -1573,7 +1516,6 @@
                 });
 
             } else {
-                // MODO SINGLE: Top 5 Dias
                 document.getElementById('chart-title-1').innerText = "Top 5 Melhores Dias";
                 
                 const bestDays = data.sort((a, b) => b.score - a.score).slice(0, 5);
@@ -1585,7 +1527,7 @@
                         datasets: [{ 
                             label: 'Produção', 
                             data: bestDays.map(d => d.score), 
-                            backgroundColor: '#10B981', // Verde
+                            backgroundColor: '#10B981', 
                             borderRadius: 4 
                         }]
                     },
@@ -1598,11 +1540,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Reutiliza dados se estiver no modal, ou busca novo
             let result;
             if (fromPreview) {
-                // Se já estiver visualizando, os inputs ainda estão lá, podemos refazer o fetch ou pegar do escopo
-                // Para simplificar e garantir, fazemos fetch novamente (é rápido no cache do Firestore)
                 result = await fetchReportData(); 
             } else {
                 result = await fetchReportData();
@@ -1614,7 +1553,6 @@
             if (data.length === 0) return showToast("Sem dados.", true);
 
             try {
-                // UI Feedback
                 let btn; 
                 if(!fromPreview) btn = document.querySelector('button[onclick="generatePDF(false)"]');
                 else btn = document.querySelector('button[onclick="generatePDF(true)"]');
@@ -1622,7 +1560,6 @@
                 const oldText = btn ? btn.innerHTML : '';
                 if(btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...'; btn.disabled = true; }
 
-                // --- PROCESSAMENTO PARA GRÁFICOS ---
                 const personMap = {};
                 const dayMap = {};
                 data.forEach(d => {
@@ -1636,11 +1573,9 @@
                 }).sort((a,b) => b.score - a.score).slice(0, 10);
                 const sortedDays = Object.keys(dayMap).sort();
 
-                // --- GERAÇÃO DAS IMAGENS DOS GRÁFICOS (FIXED) ---
                 const chartCanvas = document.createElement('canvas');
-                chartCanvas.width = 1000; // Alta Resolução
+                chartCanvas.width = 1000; 
                 chartCanvas.height = 500;
-                // CORREÇÃO: Não usar display: none, mas sim jogar para fora da tela
                 chartCanvas.style.position = 'absolute';
                 chartCanvas.style.left = '-9999px';
                 chartCanvas.style.top = '-9999px';
@@ -1674,7 +1609,6 @@
                                 }
                             }
                         });
-                        // Pequeno delay para garantir renderização no canvas offscreen
                         setTimeout(() => {
                             const img = chartCanvas.toDataURL('image/png');
                             chart.destroy();
@@ -1683,19 +1617,16 @@
                     });
                 };
 
-                // Gráfico 1: Ranking (Barra)
                 const chart1Labels = sortedPeople.map(p => p.name);
                 const chart1Data = sortedPeople.map(p => p.score);
                 const imgRanking = await generateChartImg('bar', chart1Labels, chart1Data, 'Top Produtividade', 'rgba(59, 130, 246, 0.7)');
                 
-                // Gráfico 2: Evolução (Linha)
                 const chart2Labels = sortedDays.map(d => d.split('-').reverse().slice(0,2).join('/'));
                 const chart2Data = sortedDays.map(d => dayMap[d]);
                 const imgTimeline = await generateChartImg('line', chart2Labels, chart2Data, 'Evolução Diária', 'rgba(147, 85, 247, 0.7)');
                 
                 document.body.removeChild(chartCanvas);
 
-                // --- MONTAGEM DO PDF ---
                 doc.setFontSize(22);
                 doc.setTextColor(40, 40, 40);
                 doc.text("Relatório de Performance", 14, 20);
@@ -1707,14 +1638,11 @@
 
                 let currentY = 45;
                 
-                // Gráfico 1
                 doc.addImage(imgRanking, 'PNG', 14, currentY, 180, 90);
                 currentY += 100;
 
-                // Gráfico 2
                 doc.addImage(imgTimeline, 'PNG', 14, currentY, 180, 90);
                 
-                // Nova Página para Tabela
                 doc.addPage();
                 doc.setFontSize(14);
                 doc.setTextColor(0,0,0);
@@ -1788,12 +1716,10 @@
             tb.innerHTML = h;
         }
 
-        // --- GESTÃO DE OCORRÊNCIAS (NOVO) ---
         window.loadErrorHistory = async () => {
             const tbody = document.getElementById('error-history-body');
             tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
             try {
-                // Ordena por data decrescente
                 const q = query(collection(db, "errors"), orderBy("timestamp", "desc"), limit(50));
                 const snap = await getDocs(q);
                 
@@ -1806,9 +1732,8 @@
                 snap.forEach(doc => {
                     const data = doc.data();
                     const user = allCollaborators.find(u => u.matricula === data.matricula);
-                    const nome = user ? user.nome.split(' ')[0] : data.matricula; // Primeiro nome
+                    const nome = user ? user.nome.split(' ')[0] : data.matricula; 
                     
-                    // Escapar descrição para usar no onclick
                     const safeDesc = data.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     html += `
@@ -1856,7 +1781,7 @@
                 showToast("Registrado!"); 
                 document.getElementById('error-desc').value = '';
                 document.getElementById('error-date').value = getLocalToday();
-                loadErrorHistory(); // Atualiza a lista na hora
+                loadErrorHistory(); 
             } catch(err) { showToast("Erro ao salvar.", true); }
         };
 
@@ -1892,12 +1817,11 @@
                 const fb = document.getElementById('today-feedback');
                 const titleEl = document.getElementById('productivity-title');
                 const alertsEl = document.getElementById('productivity-alerts');
-                alertsEl.innerHTML = ''; // Limpa alertas
+                alertsEl.innerHTML = ''; 
                 
                 if(displayRec) {
-                    // Lógica para mostrar a data correta no título
                     const dateParts = displayRec.date.split('-');
-                    const dateFormatted = `${dateParts[2]}/${dateParts[1]}`; // DD/MM
+                    const dateFormatted = `${dateParts[2]}/${dateParts[1]}`; 
                     
                     if (displayRec.date === getLocalToday()) {
                          titleEl.innerText = `Produção Hoje (${dateFormatted})`;
@@ -1909,7 +1833,6 @@
                     const metaVal = displayRec.meta || 0;
                     metaDisplay.innerText = `Meta: ${formatNumber(metaVal)}`;
                     
-                    // Cálculo de Cor e Feedback
                     const ratio = metaVal > 0 ? (displayRec.score / metaVal) : 0;
                     const percentage = Math.round(ratio * 100);
                     let statusClass = getPerformanceBg(displayRec.score, metaVal);
@@ -1931,16 +1854,10 @@
                     fb.className = "inline-flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-xs font-bold";
                 }
 
-                // ===============================================
-                // ALERTAS DE META E STREAKS (POSITIVO E NEGATIVO)
-                // ===============================================
-                
-                // 1. Sequência Negativa (Streak)
-                const sortedRecs = [...recs].reverse(); // Do mais recente para antigo
+                const sortedRecs = [...recs].reverse(); 
                 let consecutiveMisses = 0;
-                let consecutiveWins = 0; // Para o positivo
+                let consecutiveWins = 0; 
 
-                // Conta derrotas
                 for(let r of sortedRecs) {
                     if(r.meta > 0 && r.score < r.meta) {
                         consecutiveMisses++;
@@ -1949,7 +1866,6 @@
                     }
                 }
                 
-                // Conta vitórias (Streak Positivo)
                 for(let r of sortedRecs) {
                      if(r.meta > 0 && r.score >= r.meta) {
                         consecutiveWins++;
@@ -1958,7 +1874,6 @@
                     }
                 }
 
-                // Alerta Negativo (Vermelho)
                 if(consecutiveMisses >= 2) {
                     alertsEl.innerHTML += `
                     <div class="bg-red-50 border-l-4 border-red-500 p-2 rounded text-left">
@@ -1967,7 +1882,6 @@
                     </div>`;
                 }
 
-                // Alerta Positivo (Verde) - Streak
                 if(consecutiveWins >= 2) {
                     alertsEl.innerHTML += `
                     <div class="bg-green-50 border-l-4 border-green-500 p-2 rounded text-left">
@@ -1976,9 +1890,8 @@
                     </div>`;
                 }
 
-                // 2. Acumulado da Semana
                 const curr = new Date();
-                const firstDayOfWeek = new Date(curr.setDate(curr.getDate() - curr.getDay())); // Domingo
+                const firstDayOfWeek = new Date(curr.setDate(curr.getDate() - curr.getDay())); 
                 firstDayOfWeek.setHours(0,0,0,0);
                 
                 const weekRecs = recs.filter(r => {
@@ -1988,7 +1901,6 @@
                 const weekMisses = weekRecs.filter(r => r.meta > 0 && r.score < r.meta).length;
                 const weekWins = weekRecs.filter(r => r.meta > 0 && r.score >= r.meta).length;
 
-                // Alerta Semanal Negativo (Laranja)
                 if(weekMisses > 2) { 
                      alertsEl.innerHTML += `
                     <div class="bg-orange-50 border-l-4 border-orange-500 p-2 rounded text-left mt-2">
@@ -1997,7 +1909,6 @@
                     </div>`;
                 }
                 
-                // Alerta Semanal Positivo (Azul/Verde)
                 if(weekWins >= 3) {
                      alertsEl.innerHTML += `
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-2 rounded text-left mt-2">
@@ -2007,20 +1918,14 @@
                 }
 
 
-                // ===============================================
-                // LOGICA DE ERROS (OCORRÊNCIAS)
-                // ===============================================
                 const qErrors = query(collection(db, "errors"), where("matricula", "==", currentUserData.matricula));
                 const snapErrors = await getDocs(qErrors);
                 
-                // Processar e Ordenar em JS
                 let errorsList = [];
                 snapErrors.forEach(doc => errorsList.push(doc.data()));
                 
-                // Total Count
                 const totalErrors = errorsList.length;
 
-                // Ordena
                 errorsList.sort((a, b) => b.date.localeCompare(a.date)); 
                 errorsList = errorsList.slice(0, 5); 
 
@@ -2033,7 +1938,6 @@
                     noErrorView.classList.add('hidden');
                     errorView.classList.remove('hidden');
                     
-                    // Configura Badge de Contagem / Gravidade
                     if(totalErrors === 1) {
                         countBadge.innerText = "1ª Ocorrência";
                         countBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-yellow-100 text-yellow-700 border border-yellow-200";
@@ -2056,7 +1960,6 @@
                     document.getElementById('error-card-container').classList.remove('border-red-200', 'shadow-md');
                 }
 
-                // Gráfico
                 const ctx = document.getElementById('productivityChart').getContext('2d');
                 if(myChart) myChart.destroy();
                 const slice = recs.slice(-7);
@@ -2071,6 +1974,228 @@
 
             } catch(e) { console.error(e); }
         }
+
+        window.setRankingMode = (mode) => {
+            rankingMode = mode;
+            const btnAbs = document.getElementById('btn-rank-abs');
+            const btnPct = document.getElementById('btn-rank-pct');
+            
+            if (mode === 'absolute') {
+                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
+                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
+            } else {
+                btnAbs.className = "flex-1 py-1 text-xs font-bold rounded-md text-gray-500 hover:bg-white/50 transition";
+                btnPct.className = "flex-1 py-1 text-xs font-bold rounded-md bg-white shadow text-blue-600 transition";
+            }
+            updateDailyRanking(); 
+        };
+
+        window.updateDailyRanking = async () => {
+            const dateInput = document.getElementById('ranking-date');
+            const selectedDate = dateInput.value || getLocalToday();
+            const listEl = document.getElementById('ranking-list');
+
+            listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+
+            try {
+                const q = query(collection(db, "productivity"), where("date", "==", selectedDate));
+                const snap = await getDocs(q);
+                
+                const dailyData = [];
+                snap.forEach(doc => dailyData.push(doc.data()));
+                
+                if(dailyData.length === 0) {
+                    listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Sem dados para esta data.</p>';
+                    window.currentRankingData = []; 
+                    return;
+                }
+
+                dailyData.forEach(item => {
+                    item.percent = (item.meta && item.meta > 0) ? (item.score / item.meta) : 0;
+                });
+
+                if (rankingMode === 'absolute') {
+                    dailyData.sort((a, b) => b.score - a.score);
+                } else {
+                    dailyData.sort((a, b) => b.percent - a.percent);
+                }
+
+                window.currentRankingData = dailyData.map(item => {
+                    const user = allCollaborators.find(c => c.matricula === item.matricula);
+                    return {
+                        name: user ? user.nome.split(' ')[0] : item.matricula,
+                        score: item.score,
+                        meta: item.meta,
+                        percent: item.percent
+                    };
+                });
+
+                let html = '';
+                dailyData.forEach((item, index) => {
+                    const user = allCollaborators.find(c => c.matricula === item.matricula);
+                    const name = user ? user.nome.split(' ')[0] : item.matricula; 
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index+1}`;
+                    const colorClass = getPerformanceColor(item.score, item.meta);
+                    
+                    let mainValueDisplay = '';
+                    let subValueDisplay = '';
+
+                    const pctText = (item.percent * 100).toFixed(0) + '%';
+                    const scoreText = formatNumber(item.score);
+
+                    if (rankingMode === 'absolute') {
+                        mainValueDisplay = scoreText;
+                        subValueDisplay = `${pctText} da meta`;
+                    } else {
+                        mainValueDisplay = pctText;
+                        subValueDisplay = `${scoreText} prod.`;
+                    }
+                    
+                    html += `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg font-bold w-6 text-center">${medal}</span>
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">${name}</p>
+                                <p class="text-[10px] text-gray-500">Meta: ${formatNumber(item.meta)}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block font-bold text-lg ${colorClass}">${mainValueDisplay}</span>
+                            <span class="text-[10px] text-gray-400 font-bold block -mt-1">${subValueDisplay}</span>
+                        </div>
+                    </div>`;
+                });
+                listEl.innerHTML = html;
+
+            } catch (error) {
+                console.error("Erro ao carregar ranking:", error);
+                listEl.innerHTML = '<p class="text-center text-red-400 text-sm py-4">Erro ao carregar.</p>';
+            }
+        };
+
+        window.copyRanking = async () => {
+            const btn = document.querySelector('button[title="Copiar como Imagem"]');
+            const oldIcon = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const data = window.currentRankingData;
+                const dateVal = document.getElementById('ranking-date').value.split('-').reverse().join('/');
+                const modeText = rankingMode === 'absolute' ? "Volume de Produção" : "Performance (%)";
+                
+                if (!data || data.length === 0) {
+                     showToast("Ranking vazio.", true);
+                     btn.innerHTML = oldIcon;
+                     btn.disabled = false;
+                     return;
+                }
+
+                const exportContainer = document.createElement('div');
+                exportContainer.style.position = 'absolute';
+                exportContainer.style.top = '-9999px';
+                exportContainer.style.left = '-9999px';
+                exportContainer.style.width = '600px'; 
+                exportContainer.style.backgroundColor = '#ffffff';
+                exportContainer.style.fontFamily = "'Inter', sans-serif";
+                exportContainer.style.padding = '40px';
+                exportContainer.style.borderRadius = '20px'; 
+                exportContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'; 
+                
+                let listHtml = '';
+                data.forEach((item, index) => {
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `<span style="font-size: 1.2rem; font-weight: 800; color: #6B7280;">#${index+1}</span>`;
+                    
+                    const pctText = (item.percent * 100).toFixed(0) + '%';
+                    const scoreText = formatNumber(item.score);
+                    let mainVal, subVal;
+
+                    if (rankingMode === 'absolute') {
+                        mainVal = scoreText;
+                        subVal = `${pctText} da meta`;
+                    } else {
+                        mainVal = pctText;
+                        subVal = `${scoreText} prod.`;
+                    }
+                    
+                    const ratio = item.meta > 0 ? (item.score / item.meta) : 0;
+                    let color = '#ef4444'; 
+                    if (ratio >= 1.0) color = '#10b981'; 
+                    else if (ratio >= 0.85) color = '#eab308'; 
+
+                    listHtml += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div style="width: 40px; text-align: center; font-size: 1.5rem;">${medal}</div>
+                                <div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 4px;">${item.name}</div>
+                                    <div style="font-size: 0.85rem; color: #9ca3af;">Meta: ${formatNumber(item.meta)}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.25rem; font-weight: 800; color: ${color};">${mainVal}</div>
+                                <div style="font-size: 0.85rem; color: #9ca3af; font-weight: 600;">${subVal}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                exportContainer.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f3f4f6; padding-bottom: 20px;">
+                        <div style="width: 60px; height: 60px; background-color: #2563EB; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32px" height="32px"><path d="M5 2H2V6C2 8.20914 3.79086 10 6 10H7V12C7 14.2091 8.79086 16 11 16H13C15.2091 16 17 14.2091 17 12V10H18C20.2091 10 22 8.20914 22 6V2H19V6C19 6.55228 18.5523 7 18 7H17V2H15V10H9V2H7V7H6C5.44772 7 5 6.55228 5 6V2ZM12 18C9.5 18 8 19 8 20V22H16V20C16 19 14.5 18 12 18Z"></path></svg>
+                        </div>
+                        <h2 style="font-size: 1.8rem; font-weight: 800; color: #111827; margin: 0;">Ranking do Dia</h2>
+                        <p style="font-size: 1rem; color: #6B7280; margin: 5px 0 0 0;">${dateVal} • ${modeText}</p>
+                    </div>
+                    <div style="background-color: #f9fafb; border-radius: 12px; padding: 10px 20px;">
+                        ${listHtml}
+                    </div>
+                    <div style="margin-top: 30px; text-align: center;">
+                        <p style="font-size: 0.8rem; color: #d1d5db; font-weight: 500;">Gerado por Checkout System • ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                `;
+
+                document.body.appendChild(exportContainer);
+
+                const canvas = await html2canvas(exportContainer, {
+                    scale: 2, 
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                canvas.toBlob(async (blob) => {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.write) {
+                            const item = new ClipboardItem({ 'image/png': blob });
+                            await navigator.clipboard.write([item]);
+                            showToast("Imagem Completa Copiada! 📸");
+                        } else {
+                            throw new Error("Clipboard API fail");
+                        }
+                    } catch (err) {
+                        const link = document.createElement('a');
+                        link.download = `ranking_completo_${dateVal.replace(/\//g,'-')}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        showToast("Imagem Baixada (Cópia falhou) 📥");
+                    }
+                    
+                    document.body.removeChild(exportContainer);
+                    btn.innerHTML = oldIcon;
+                    btn.disabled = false;
+                }, 'image/png');
+
+            } catch (err) {
+                console.error("Erro ao gerar imagem completa:", err);
+                showToast("Erro ao gerar imagem.", true);
+                if(document.querySelector('div[style*="-9999px"]')) document.body.removeChild(document.querySelector('div[style*="-9999px"]'));
+                btn.innerHTML = oldIcon;
+                btn.disabled = false;
+            }
+        };
 
         onAuthStateChanged(auth, async (u) => {
             if(u) {
@@ -2112,11 +2237,9 @@
             
             document.getElementById('toast-msg').innerText = m;
             
-            // Estado VISÍVEL
             t.className = `fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 z-50 flex items-center gap-4 max-w-sm text-white pointer-events-auto ${err ? 'bg-red-800' : 'bg-gray-900'} translate-y-0 opacity-100`;
             
             toastTimeout = setTimeout(() => {
-                // Estado OCULTO (Remove classes de visibilidade conflitantes e adiciona as de ocultação)
                 t.classList.remove('translate-y-0', 'opacity-100');
                 t.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
             }, 3000);
