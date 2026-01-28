@@ -406,8 +406,8 @@
                     <button onclick="switchAdminTab('equipe')" id="tab-equipe" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
                         <i class="fas fa-users"></i> Equipe
                     </button>
-                    <!-- Nova Aba: Auditoria -->
-                    <button onclick="switchAdminTab('auditoria')" id="tab-auditoria" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
+                    <!-- Nova Aba: Auditoria (Apenas Super Admin) -->
+                    <button onclick="switchAdminTab('auditoria')" id="tab-auditoria" class="tab-btn hidden px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
                         <i class="fas fa-shield-alt"></i> Auditoria
                     </button>
                 </div>
@@ -1045,6 +1045,11 @@
         };
 
         window.switchAdminTab = (tabName) => {
+            if (tabName === 'auditoria' && (!currentUserData || !currentUserData.isMaster)) {
+                showToast("Acesso restrito a Super Admin.", true);
+                return;
+            }
+
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             ['lancamentos', 'equipe', 'erros', 'relatorios', 'auditoria'].forEach(t => {
                 const el = document.getElementById(`view-${t}`);
@@ -1277,6 +1282,9 @@
                 const users = [];
                 snap.forEach(doc => users.push({id: doc.id, ...doc.data()}));
                 
+                // Lista de Emails MASTER (Super Admins)
+                const MASTER_EMAILS = ['erlan.santos@dpsp.com.br'];
+
                 users.sort((a, b) => {
                     if (a.role === 'admin' && b.role !== 'admin') return -1;
                     if (a.role !== 'admin' && b.role === 'admin') return 1;
@@ -1296,21 +1304,38 @@
                 }
 
                 users.forEach((u) => {
+                    const isTargetMaster = MASTER_EMAILS.includes(u.email);
+                    
                     const metaFormatted = u.meta ? formatNumber(u.meta) : '-';
-                    const roleBadge = u.role === 'admin' 
+                    let roleBadge = u.role === 'admin' 
                         ? '<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">Gestor</span>' 
                         : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold">Colaborador</span>';
                     
-                    // --- SEGURANÇA: IDENTIFICA SE É O PRÓPRIO USUÁRIO ---
+                    if (isTargetMaster) {
+                        roleBadge = '<span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold border border-yellow-200"><i class="fas fa-crown text-[10px]"></i> Super Admin</span>';
+                    }
+
+                    // --- SEGURANÇA: IDENTIFICA SE É O PRÓPRIO USUÁRIO OU SE É MASTER ---
                     const isMe = (u.id === currentUserData.uid);
                     const nameDisplay = isMe ? `${u.nome} <span class="text-green-600 font-bold text-xs ml-1">(Você)</span>` : u.nome;
-                    const deleteBtn = isMe 
-                        ? `<button class="text-gray-300 border border-gray-100 px-3 py-1 rounded text-xs cursor-not-allowed" title="Você não pode se excluir"><i class="fas fa-ban"></i></button>`
-                        : `<button onclick="deleteUser('${u.id}', '${u.nome}')" class="text-red-500 border border-red-200 px-3 py-1 rounded text-xs hover:bg-red-50"><i class="fas fa-trash"></i></button>`;
+                    
+                    let deleteBtn = '';
+                    
+                    if (isMe) {
+                        deleteBtn = `<button class="text-gray-300 border border-gray-100 px-3 py-1 rounded text-xs cursor-not-allowed" title="Você não pode se excluir"><i class="fas fa-ban"></i></button>`;
+                    } else if (isTargetMaster) {
+                        // --- PROTEÇÃO DE MASTER: NINGUÉM APAGA O CHEFE ---
+                        deleteBtn = `<button class="text-yellow-400 border border-yellow-100 px-3 py-1 rounded text-xs cursor-not-allowed bg-yellow-50" title="Usuário Protegido (Super Admin)"><i class="fas fa-shield-alt"></i></button>`;
+                    } else {
+                        deleteBtn = `<button onclick="deleteUser('${u.id}', '${u.nome}')" class="text-red-500 border border-red-200 px-3 py-1 rounded text-xs hover:bg-red-50"><i class="fas fa-trash"></i></button>`;
+                    }
 
                     html += `
-                        <tr class="border-b ${isMe ? 'bg-green-50/30' : ''}">
-                            <td class="p-4 font-medium">${nameDisplay}</td>
+                        <tr class="border-b ${isMe ? 'bg-green-50/30' : ''} ${isTargetMaster && !isMe ? 'bg-yellow-50/30' : ''}">
+                            <td class="p-4 font-medium flex items-center gap-2">
+                                ${nameDisplay} 
+                                ${isTargetMaster ? '<i class="fas fa-check-circle text-blue-500 text-xs" title="Verificado"></i>' : ''}
+                            </td>
                             <td class="p-4 text-gray-500 font-mono text-xs">${u.matricula || u.email}</td>
                             <td class="p-4">${roleBadge}</td>
                             <td class="p-4 text-gray-500">${metaFormatted}</td>
@@ -2335,6 +2360,12 @@
                     const docSnap = await getDoc(doc(db, "users", u.uid));
                     if(docSnap.exists()) {
                         currentUserData = docSnap.data(); currentUserData.uid = u.uid;
+                        
+                        // --- CONFIGURAÇÃO DE MASTER (SUPER ADMIN) ---
+                        // Define quem pode ver auditoria e não pode ser deletado
+                        const MASTER_EMAILS = ['erlan.santos@dpsp.com.br'];
+                        currentUserData.isMaster = MASTER_EMAILS.includes(currentUserData.email) || currentUserData.role === 'master';
+
                         document.getElementById('login-screen').classList.add('hidden');
                         document.getElementById('dashboard').classList.remove('hidden');
                         document.getElementById('admin-panel').classList.add('hidden');
@@ -2344,6 +2375,14 @@
                         if(currentUserData.role === 'admin') {
                             document.getElementById('admin-panel').classList.remove('hidden');
                             document.getElementById('user-role').innerText = "Gestor";
+                            
+                            // EXIBIR ABA AUDITORIA APENAS SE FOR MASTER
+                            if(currentUserData.isMaster) {
+                                document.getElementById('tab-auditoria').classList.remove('hidden');
+                            } else {
+                                document.getElementById('tab-auditoria').classList.add('hidden');
+                            }
+
                             loadCollaboratorsForSelect(); 
                             loadAdminData();
                         } else {
